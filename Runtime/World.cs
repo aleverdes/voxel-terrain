@@ -11,6 +11,7 @@ namespace AffenCode.VoxelTerrain
         public Vector3Int WorldSize = new Vector3Int(128, 32, 128);
         public float BlockSize = 1f;
         public Material WorldMaterial;
+        public Atlas WorldAtlas;
         
         [Range(0.01f, 50f)] public float BrushSize = 3f;
 
