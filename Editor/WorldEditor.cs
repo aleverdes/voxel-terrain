@@ -19,7 +19,7 @@ namespace AffenCode.VoxelTerrain
 
         private bool _editMode;
 
-        private Vector3 _lastMouseWorldPosition;
+        private Vector3 _mouseWorldPosition;
         private Vector3Int _hoveredBlockPosition;
 
         private WorldTool _tool = WorldTool.None;
@@ -101,6 +101,9 @@ namespace AffenCode.VoxelTerrain
                 case WorldTool.PaintFace:
                     InspectorDrawPaintFaceTool();
                     break;
+                case WorldTool.ChangeHeight:
+                    InspectorDrawChangeHeightTool();
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -114,36 +117,37 @@ namespace AffenCode.VoxelTerrain
 
             EditorGUILayout.BeginHorizontal();
             
-            if (GUILayout.Button("None", _tool == WorldTool.None ? _activeButtonGuiStyleLeft : _normalButtonGuiStyleLeft))
+            if (GUILayout.Button("-", _tool == WorldTool.None ? _activeButtonGuiStyleLeft : _normalButtonGuiStyleLeft))
             {
                 _tool = WorldTool.None;
             }
-            
-            if (GUILayout.Button("Add B", _tool == WorldTool.AddBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            if (GUILayout.Button("AB", _tool == WorldTool.AddBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
             {
                 _tool = WorldTool.AddBlock;
             }
-            if (GUILayout.Button("Remove B", _tool == WorldTool.RemoveBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            if (GUILayout.Button("RB", _tool == WorldTool.RemoveBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
             {
                 _tool = WorldTool.RemoveBlock;
             }
-            
-            if (GUILayout.Button("Select B", _tool == WorldTool.SelectBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            if (GUILayout.Button("SB", _tool == WorldTool.SelectBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
             {
                 _tool = WorldTool.SelectBlock;
             }
-            if (GUILayout.Button("Select F", _tool == WorldTool.SelectFace ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            if (GUILayout.Button("SF", _tool == WorldTool.SelectFace ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
             {
                 _tool = WorldTool.SelectFace;
             }
-            
-            if (GUILayout.Button("Paint B", _tool == WorldTool.PaintBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            if (GUILayout.Button("PB", _tool == WorldTool.PaintBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
             {
                 _tool = WorldTool.PaintBlock;
             }
-            if (GUILayout.Button("Paint F", _tool == WorldTool.PaintFace ? _activeButtonGuiStyleRight : _normalButtonGuiStyleRight))
+            if (GUILayout.Button("PF", _tool == WorldTool.PaintFace ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
             {
                 _tool = WorldTool.PaintFace;
+            }
+            if (GUILayout.Button("CH", _tool == WorldTool.ChangeHeight ? _activeButtonGuiStyleRight : _normalButtonGuiStyleRight))
+            {
+                _tool = WorldTool.ChangeHeight;
             }
             
             EditorGUILayout.EndHorizontal();
@@ -187,6 +191,11 @@ namespace AffenCode.VoxelTerrain
             
         }
 
+        private void InspectorDrawChangeHeightTool()
+        {
+            
+        }
+
         private void OnScene(SceneView sceneView)
         {
             if (!_editMode)
@@ -200,15 +209,33 @@ namespace AffenCode.VoxelTerrain
             }
             
             Selection.activeGameObject = Target.gameObject;
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
+
+            UpdateMouseWorldPosition();
+            
             ProcessSelectedBlocks();
             
-            if (_tool != WorldTool.None)
+            if (_tool != WorldTool.None && _tool != WorldTool.ChangeHeight)
             {
                 ProcessBlockSelection();
             }
+            else if (_tool == WorldTool.ChangeHeight)
+            {
+                ProcessHeightChanging();
+            }
             
             ProcessEvents();
+        }
+
+        private void UpdateMouseWorldPosition()
+        {
+            Vector3 mousePosition = Event.current.mousePosition;
+            var worldRay = HandleUtility.GUIPointToWorldRay(mousePosition);
+            if (Physics.Raycast(worldRay, out var hit, 500f))
+            {
+                _mouseWorldPosition = hit.point;
+            }
         }
 
         private void ProcessSelectedBlocks()
@@ -222,22 +249,13 @@ namespace AffenCode.VoxelTerrain
 
         private void ProcessBlockSelection()
         {
-            Vector3 mousePosition = Event.current.mousePosition;
-            var worldRay = HandleUtility.GUIPointToWorldRay(mousePosition);
-            var mouseWorldPosition = _lastMouseWorldPosition;
-            if (Physics.Raycast(worldRay, out var hit, 500f))
-            {
-                mouseWorldPosition = hit.point;
-                _lastMouseWorldPosition = mouseWorldPosition;
-            }
-            
             Handles.color = SelectorColor;
             
-            var cellPosition = mouseWorldPosition;
+            var cellPosition = _mouseWorldPosition;
             
-            cellPosition.x = (mouseWorldPosition.x) / Target.BlockSize; 
-            cellPosition.y = (mouseWorldPosition.y - 0.001f) / Target.BlockSize; 
-            cellPosition.z = (mouseWorldPosition.z) / Target.BlockSize;
+            cellPosition.x = _mouseWorldPosition.x / Target.BlockSize; 
+            cellPosition.y = (_mouseWorldPosition.y - 0.001f) / Target.BlockSize; 
+            cellPosition.z = _mouseWorldPosition.z / Target.BlockSize;
 
             cellPosition.x = Mathf.Clamp(cellPosition.x, 0, Target.WorldSize.x - 1);
             cellPosition.y = Mathf.Clamp(cellPosition.y, 0, Target.WorldSize.y - 1);
@@ -246,6 +264,12 @@ namespace AffenCode.VoxelTerrain
             _hoveredBlockPosition = ToVector3Int(cellPosition);
 
             DrawBlockSelection(_hoveredBlockPosition);
+        }
+
+        private void ProcessHeightChanging()
+        {
+            Handles.color = Color.red;
+            Handles.DrawWireDisc(_mouseWorldPosition, Vector3.up, 0.5f, 3f);
         }
 
         private void ProcessEvents()

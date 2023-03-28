@@ -9,5 +9,6 @@ namespace AffenCode.VoxelTerrain
         SelectFace,
         PaintBlock,
         PaintFace,
+        ChangeHeight
     }
 }
