@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Rendering;
 using UnityEngine;
@@ -15,6 +16,8 @@ namespace AffenCode.VoxelTerrain
 
         private static readonly Color SelectorColor = new Color(1, 0, 0, 0.66f);
         private static readonly Color SelectedBlockColor = new Color(1, 0, 0, 0.33f);
+
+        private bool _editMode;
         
         public override void OnInspectorGUI()
         {
@@ -29,8 +32,12 @@ namespace AffenCode.VoxelTerrain
                 
                 return;
             }
-            
-            
+
+            if (GUILayout.Button("Edit Mode"))
+            {
+                _editMode = !_editMode;
+                Tools.hidden = _editMode;
+            }
         }
 
         public void OnEnable()
@@ -47,6 +54,11 @@ namespace AffenCode.VoxelTerrain
 
         private void OnScene(SceneView sceneView)
         {
+            if (!_editMode)
+            {
+                return;
+            }
+            
             if (!Target)
             {
                 return;
@@ -75,7 +87,24 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(GetPolygon(selectedBlock));
             };
-            
+
+            if (_selectedBlocks.Count > 0)
+            {
+                var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+                var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+                foreach (var selectedBlock in _selectedBlocks)
+                {
+                    max.x = Mathf.Max(selectedBlock.x, max.x);
+                    max.y = Mathf.Max(selectedBlock.y, max.y);
+                    max.z = Mathf.Max(selectedBlock.z, max.z);
+                    
+                    min.x = Mathf.Min(selectedBlock.x, min.x);
+                    min.y = Mathf.Min(selectedBlock.y, min.y);
+                    min.z = Mathf.Min(selectedBlock.z, min.z);
+                }
+                var center = 0.5f * (max + min);
+                Handles.PositionHandle(center + new Vector3(0.5f, 0, 0.5f), Quaternion.identity);
+            }
             
             
             
