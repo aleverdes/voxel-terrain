@@ -24,7 +24,6 @@ namespace AffenCode.VoxelTerrain
 
         private WorldTool _tool = WorldTool.None;
         
-        
         private GUIStyle _normalButtonGuiStyleLeft;
         private GUIStyle _activeButtonGuiStyleLeft;
         private GUIStyle _normalButtonGuiStyleMid;
@@ -85,6 +84,31 @@ namespace AffenCode.VoxelTerrain
         private void DrawEditMode()
         {
             InspectorDrawTools();
+            switch (_tool)
+            {
+                case WorldTool.None:
+                    break;
+                case WorldTool.AddBlock:
+                    InspectorDrawAddBlockTool();
+                    break;
+                case WorldTool.RemoveBlock:
+                    InspectorDrawRemoveBlockTool();
+                    break;
+                case WorldTool.SelectBlock:
+                    InspectorDrawSelectBlockTool();
+                    break;
+                case WorldTool.SelectFace:
+                    InspectorDrawSelectFaceTool();
+                    break;
+                case WorldTool.PaintBlock:
+                    InspectorDrawPaintBlockTool();
+                    break;
+                case WorldTool.PaintFace:
+                    InspectorDrawPaintFaceTool();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void InspectorDrawTools()
@@ -136,6 +160,36 @@ namespace AffenCode.VoxelTerrain
             
 
             EditorGUILayout.EndVertical();
+        }
+
+        private void InspectorDrawAddBlockTool()
+        {
+            
+        }
+
+        private void InspectorDrawRemoveBlockTool()
+        {
+            
+        }
+
+        private void InspectorDrawSelectBlockTool()
+        {
+            
+        }
+
+        private void InspectorDrawSelectFaceTool()
+        {
+            
+        }
+
+        private void InspectorDrawPaintBlockTool()
+        {
+            
+        }
+
+        private void InspectorDrawPaintFaceTool()
+        {
+            
         }
 
         private void OnScene(SceneView sceneView)

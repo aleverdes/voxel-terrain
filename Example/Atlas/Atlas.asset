@@ -26,144 +26,84 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7a62f3c66cb734c8ea155900f0a5742d, type: 2}
   - {fileID: 11400000, guid: 98bc9787be5b04c58bb93dc93c1afe9e, type: 2}
   TextureAtlas: {fileID: 2800000, guid: e09625727b0a74545b8be08ed69106f0, type: 3}
-  AtlasTextures:
-  - LayerIndex: 0
-    LayerTextureIndex: 0
-    UvPosition: {x: 0, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 0
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.0625, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 0
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.125, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 0
-    LayerTextureIndex: 3
-    UvPosition: {x: 0.1875, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 0
-    LayerTextureIndex: 4
-    UvPosition: {x: 0.25, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 1
-    LayerTextureIndex: 0
-    UvPosition: {x: 0.3125, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 2
-    LayerTextureIndex: 0
-    UvPosition: {x: 0.375, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 2
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.4375, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 2
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.5, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 3
-    LayerTextureIndex: 0
-    UvPosition: {x: 0.5625, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 3
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.625, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 3
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.6875, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 4
-    LayerTextureIndex: 0
-    UvPosition: {x: 0.75, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 4
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.8125, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 4
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.875, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 5
-    LayerTextureIndex: 0
-    UvPosition: {x: 0.9375, y: 0}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 6
-    LayerTextureIndex: 0
-    UvPosition: {x: 0, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 6
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.0625, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 6
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.125, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 6
-    LayerTextureIndex: 3
-    UvPosition: {x: 0.1875, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 6
-    LayerTextureIndex: 4
-    UvPosition: {x: 0.25, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 6
-    LayerTextureIndex: 5
-    UvPosition: {x: 0.3125, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 7
-    LayerTextureIndex: 0
-    UvPosition: {x: 0.375, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 7
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.4375, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 7
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.5, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 8
-    LayerTextureIndex: 0
-    UvPosition: {x: 0.5625, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 8
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.625, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 8
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.6875, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 8
-    LayerTextureIndex: 3
-    UvPosition: {x: 0.75, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 8
-    LayerTextureIndex: 4
-    UvPosition: {x: 0.8125, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 8
-    LayerTextureIndex: 5
-    UvPosition: {x: 0.875, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 8
-    LayerTextureIndex: 6
-    UvPosition: {x: 0.9375, y: 0.0625}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 9
-    LayerTextureIndex: 0
-    UvPosition: {x: 0, y: 0.125}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 9
-    LayerTextureIndex: 1
-    UvPosition: {x: 0.0625, y: 0.125}
-    UvSize: {x: 0.0625, y: 0.0625}
-  - LayerIndex: 9
-    LayerTextureIndex: 2
-    UvPosition: {x: 0.125, y: 0.125}
-    UvSize: {x: 0.0625, y: 0.0625}
+  AtlasLayers:
+  - Textures:
+    - UvPosition: {x: 0, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.0625, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.125, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.1875, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.25, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0.3125, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0.375, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.4375, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.5, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0.5625, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.625, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.6875, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0.75, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.8125, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.875, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0.9375, y: 0}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.0625, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.125, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.1875, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.25, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.3125, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0.375, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.4375, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.5, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0.5625, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.625, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.6875, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.75, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.8125, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.875, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.9375, y: 0.0625}
+      UvSize: {x: 0.0625, y: 0.0625}
+  - Textures:
+    - UvPosition: {x: 0, y: 0.125}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.0625, y: 0.125}
+      UvSize: {x: 0.0625, y: 0.0625}
+    - UvPosition: {x: 0.125, y: 0.125}
+      UvSize: {x: 0.0625, y: 0.0625}

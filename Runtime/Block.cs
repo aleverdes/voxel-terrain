@@ -6,7 +6,8 @@ namespace AffenCode.VoxelTerrain
     [Serializable]
     public struct Block
     {
-        public Vector2Int Position;
+        public bool Void;
+        public Vector3Int Position;
         
         public Face Top;
         public Face Bottom;
@@ -19,7 +20,8 @@ namespace AffenCode.VoxelTerrain
     [Serializable]
     public struct Face
     {
+        public bool Draw;
         public byte LayerIndex;
-        public byte LayerTextureOverride;
+        public byte LayerTextureIndex;
     }
 }

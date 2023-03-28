@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -18,7 +19,7 @@ namespace AffenCode.VoxelTerrain
 
         [Header("Texture Atlas")]
         public Texture TextureAtlas;
-        public AtlasTexture[] AtlasTextures;
+        public AtlasLayerData[] AtlasLayers;
 
 #if UNITY_EDITOR
         [ContextMenu("Generate Texture Atlas")]
@@ -31,33 +32,33 @@ namespace AffenCode.VoxelTerrain
 
             var atlas = new Texture2D(Size, Size, TextureFormat.RGBA32, 0, true);
             
-            AtlasTextures = new AtlasTexture[CalculateAtlasTexturesLength()];
+            AtlasLayers = new AtlasLayerData[Layers.Length];
 
-            var layerIndex = 0;
-            foreach (var layer in Layers)
+            for (var layerIndex = 0; layerIndex < Layers.Length; layerIndex++)
             {
-                var layerTextureIndex = 0;
-                foreach (var texture in layer.Textures)
+                var layer = Layers[layerIndex];
+                AtlasLayers[layerIndex] = new AtlasLayerData()
                 {
+                    Textures = new AtlasTextureData[layer.Textures.Length]
+                };
+                
+                for (var layerTextureIndex = 0; layerTextureIndex < layer.Textures.Length; layerTextureIndex++)
+                {
+                    var texture = layer.Textures[layerTextureIndex];
                     var x = atlasTextureIndex % atlasTextureLength;
-                    var y = Mathf.FloorToInt((float) atlasTextureIndex / atlasTextureLength);
+                    var y = Mathf.FloorToInt((float)atlasTextureIndex / atlasTextureLength);
 
                     var pixels = texture.GetPixels(0, 0, texture.width, texture.height);
                     atlas.SetPixels(TextureSize * x, Size - TextureSize * (y + 1), TextureSize, TextureSize, pixels);
 
-                    AtlasTextures[atlasTextureIndex] = new AtlasTexture
+                    AtlasLayers[layerIndex].Textures[layerTextureIndex] = new AtlasTextureData()
                     {
-                        LayerIndex = (byte) layerIndex,
-                        LayerTextureIndex = (byte) layerTextureIndex,
                         UvPosition = new Vector2(x, y) * uvSize,
                         UvSize = new Vector2(uvSize, uvSize)
                     };
-                        
-                    layerTextureIndex++;
+
                     atlasTextureIndex++;
                 }
-
-                layerIndex++;
             }
 
             var pathToAtlas = AssetDatabase.GetAssetPath(this);
@@ -67,11 +68,6 @@ namespace AffenCode.VoxelTerrain
             AssetDatabase.ImportAsset(pathToPng);
             
             TextureAtlas = AssetDatabase.LoadAssetAtPath<Texture>(pathToPng);
-        }
-
-        private int CalculateAtlasTexturesLength()
-        {
-            return Layers.Sum(layer => layer.Textures.Length);
         }
 #endif
     }

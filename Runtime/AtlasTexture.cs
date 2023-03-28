@@ -4,10 +4,14 @@ using UnityEngine;
 namespace AffenCode.VoxelTerrain
 {
     [Serializable]
-    public struct AtlasTexture
+    public struct AtlasLayerData
     {
-        public byte LayerIndex;
-        public byte LayerTextureIndex;
+        public AtlasTextureData[] Textures;
+    }
+
+    [Serializable]
+    public struct AtlasTextureData
+    {
         public Vector2 UvPosition;
         public Vector2 UvSize;
     }
