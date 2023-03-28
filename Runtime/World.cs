@@ -96,7 +96,7 @@ namespace AffenCode.VoxelTerrain
             var halfHeight = _blocks.GetLength(1) / 2;
             for (int x = 0; x < _blocks.GetLength(0); x++)
             {
-                for (int y = 0; y <= halfHeight; y++)
+                for (int y = 0; y < halfHeight; y++)
                 {
                     for (int z = 0; z < _blocks.GetLength(2); z++)
                     {
@@ -268,10 +268,10 @@ namespace AffenCode.VoxelTerrain
                             
                             uvs.AddRange(new []
                             {
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
                                 atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
                                 atlasTextureData.UvPosition + new Vector2(0, 1),
                                 atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
+                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
                             });
 
                             tangents.AddRange(new []
@@ -309,10 +309,10 @@ namespace AffenCode.VoxelTerrain
                             
                             uvs.AddRange(new []
                             {
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
                                 atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
                                 atlasTextureData.UvPosition + new Vector2(0, 1),
                                 atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
+                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
                             });
 
                             tangents.AddRange(new []
@@ -416,42 +416,6 @@ namespace AffenCode.VoxelTerrain
             _mesh.tangents = tangents.ToArray();
             _mesh.triangles = triangles.ToArray();
             
-
-            // var vertices = new Vector3[(WorldSize.x + 1) * (WorldSize.z + 1)];
-            // var uv = new Vector2[vertices.Length];
-            // var tangents = new Vector4[vertices.Length];
-            // var tangent = new Vector4(1f, 0f, 0f, -1f);
-            //
-            // for (int i = 0, z = 0; z <= zSize; z++)
-            // {
-            //     for (var x = 0; x <= xSize; x++, i++)
-            //     {
-            //         vertices[i] = new Vector3(x * BlockSize, 0, z * BlockSize);
-            //         uv[i] = new Vector2((float)x / xSize, (float)z / zSize);
-            //         tangents[i] = tangent;
-            //     }
-            // }
-            //
-            // _mesh.vertices = vertices;
-            // _mesh.uv = uv;
-            // _mesh.tangents = tangents;
-            //
-            // var triangles = new int[xSize * zSize * 6];
-            // for (int ti = 0, vi = 0, y = 0; y < zSize; y++, vi++)
-            // {
-            //     for (var x = 0; x < xSize; x++, ti += 6, vi++)
-            //     {
-            //         triangles[ti] = vi;
-            //         triangles[ti + 3] = triangles[ti + 2] = vi + 1;
-            //         triangles[ti + 4] = triangles[ti + 1] = vi + xSize + 1;
-            //         triangles[ti + 5] = vi + xSize + 2;
-            //     }
-            // }
-            //
-            // _mesh.vertices = vertices;
-            // _mesh.uv = uv;
-            // _mesh.tangents = tangents;
-            // _mesh.triangles = triangles;
             _mesh.RecalculateNormals();
         }
     }
