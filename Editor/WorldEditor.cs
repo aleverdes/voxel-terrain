@@ -18,6 +18,12 @@ namespace AffenCode.VoxelTerrain
         private static readonly Color SelectedBlockColor = new Color(1, 0, 0, 0.33f);
 
         private bool _editMode;
+
+        private Vector3 _lastMouseWorldPosition;
+        private Vector3Int _hoveredBlockPosition;
+
+        private Vector3 _handlePositionOnSelection;
+        private Vector3 _handlePositionOnChanging;
         
         public override void OnInspectorGUI()
         {
@@ -38,6 +44,16 @@ namespace AffenCode.VoxelTerrain
                 _editMode = !_editMode;
                 Tools.hidden = _editMode;
             }
+
+            if (_editMode)
+            {
+                DrawEditMode();
+            }
+        }
+
+        private void DrawEditMode()
+        {
+            
         }
 
         public void OnEnable()
@@ -71,43 +87,40 @@ namespace AffenCode.VoxelTerrain
             
             Selection.activeGameObject = Target.gameObject;
             
-            Vector3 mousePosition = Event.current.mousePosition;
-            var worldRay = HandleUtility.GUIPointToWorldRay(mousePosition);
-            
-            var mouseWorldPosition = Vector3.zero;
-            if (Physics.Raycast(worldRay, out var hit, 500f))
-            {
-                mouseWorldPosition = hit.point;
-            }
+            ProcessSelectedBlocks();
+            ProcessBlockSelection();
+            ProcessEvents();
+        }
 
-
-
+        private void ProcessSelectedBlocks()
+        {
             Handles.color = SelectedBlockColor;
             foreach (var selectedBlock in _selectedBlocks)
             {
                 Handles.DrawAAConvexPolygon(GetPolygon(selectedBlock));
             };
 
-            if (_selectedBlocks.Count > 0)
+            // if (_selectedBlocks.Count > 0)
+            // {
+            //     EditorGUI.BeginChangeCheck();
+            //     _handlePositionOnChanging = Handles.PositionHandle(_handlePositionOnChanging, Quaternion.identity);
+            //     if (EditorGUI.EndChangeCheck())
+            //     {
+            //         var heightDifference = _handlePositionOnChanging.y - _handlePositionOnSelection.y;
+            //     }
+            // }
+        }
+
+        private void ProcessBlockSelection()
+        {
+            Vector3 mousePosition = Event.current.mousePosition;
+            var worldRay = HandleUtility.GUIPointToWorldRay(mousePosition);
+            var mouseWorldPosition = _lastMouseWorldPosition;
+            if (Physics.Raycast(worldRay, out var hit, 500f))
             {
-                var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-                var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-                foreach (var selectedBlock in _selectedBlocks)
-                {
-                    max.x = Mathf.Max(selectedBlock.x, max.x);
-                    max.y = Mathf.Max(selectedBlock.y, max.y);
-                    max.z = Mathf.Max(selectedBlock.z, max.z);
-                    
-                    min.x = Mathf.Min(selectedBlock.x, min.x);
-                    min.y = Mathf.Min(selectedBlock.y, min.y);
-                    min.z = Mathf.Min(selectedBlock.z, min.z);
-                }
-                var center = 0.5f * (max + min);
-                Handles.PositionHandle(center + new Vector3(0.5f, 0, 0.5f), Quaternion.identity);
+                mouseWorldPosition = hit.point;
+                _lastMouseWorldPosition = mouseWorldPosition;
             }
-            
-            
-            
             
             Handles.color = SelectorColor;
             
@@ -115,10 +128,13 @@ namespace AffenCode.VoxelTerrain
             cellPosition.x = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.x); 
             cellPosition.y = Target.BlockSize + Mathf.FloorToInt(mouseWorldPosition.y - 0.5f); 
             cellPosition.z = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.z); 
-            var hoveredBlockPosition = ToVector3Int(cellPosition);
+            _hoveredBlockPosition = ToVector3Int(cellPosition);
             
-            Handles.DrawAAConvexPolygon(GetPolygon(hoveredBlockPosition));
+            Handles.DrawAAConvexPolygon(GetPolygon(_hoveredBlockPosition));
+        }
 
+        private void ProcessEvents()
+        {
             var modeControlKey = false;
 #if UNITY_EDITOR_OSX
             modeControlKey = Event.current.command;
@@ -146,23 +162,38 @@ namespace AffenCode.VoxelTerrain
                     }
                     else
                     {
-                        var blockPosition = ToVector3Int(cellPosition);
                         if (modeShiftKey)
                         {
-                            if (_selectedBlocks.Contains(blockPosition))
+                            if (_selectedBlocks.Contains(_hoveredBlockPosition))
                             {
-                                _selectedBlocks.Remove(blockPosition);
+                                _selectedBlocks.Remove(_hoveredBlockPosition);
                             }
                             else
                             {
-                                _selectedBlocks.Add(blockPosition);
+                                _selectedBlocks.Add(_hoveredBlockPosition);
                             }
                         }
                         else
                         {
                             _selectedBlocks.Clear();
-                            _selectedBlocks.Add(blockPosition);
+                            _selectedBlocks.Add(_hoveredBlockPosition);
                         }
+                        
+                        var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+                        var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+                        foreach (var selectedBlock in _selectedBlocks)
+                        {
+                            max.x = Mathf.Max(selectedBlock.x, max.x);
+                            max.y = Mathf.Max(selectedBlock.y, max.y);
+                            max.z = Mathf.Max(selectedBlock.z, max.z);
+                    
+                            min.x = Mathf.Min(selectedBlock.x, min.x);
+                            min.y = Mathf.Min(selectedBlock.y, min.y);
+                            min.z = Mathf.Min(selectedBlock.z, min.z);
+                        }
+                        
+                        _handlePositionOnSelection = 0.5f * (max + min)  + new Vector3(0.5f, 0, 0.5f);
+                        _handlePositionOnChanging = _handlePositionOnSelection;
                     }
                 }
             }

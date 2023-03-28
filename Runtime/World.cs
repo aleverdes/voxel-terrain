@@ -22,6 +22,9 @@ namespace AffenCode.VoxelTerrain
         [SerializeField] private MeshRenderer _meshRenderer;
         [SerializeField] private MeshCollider _meshCollider;
 
+        [Header("Blocks")] 
+        public Block[,,] Blocks;
+        
         public Mesh Mesh => _mesh;
         public GameObject MeshObject => _meshObject;
         public MeshFilter MeshFilter => _meshFilter;
@@ -52,6 +55,8 @@ namespace AffenCode.VoxelTerrain
             _meshRenderer.sharedMaterial = WorldMaterial;
             
             _meshCollider = _meshObject.AddComponent<MeshCollider>();
+
+            Blocks = new Block[WorldSize.x, WorldSize.y, WorldSize.z];
         }
 
         [ContextMenu("Generate Empty Mesh")]
