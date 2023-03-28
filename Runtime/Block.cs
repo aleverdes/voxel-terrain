@@ -8,6 +8,7 @@ namespace AffenCode.VoxelTerrain
     {
         public bool Void;
         public Vector3Int Position;
+        public Vector2Int Chunk;
         
         public Face Top;
         public Face Bottom;

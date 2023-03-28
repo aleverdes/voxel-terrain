@@ -61,16 +61,11 @@ namespace AffenCode.VoxelTerrain
             EditorGUILayout.Space();
             EditorGUILayout.Space();
 
-            if (!Target.Mesh)
+            if (GUILayout.Button("Reset"))
             {
-                if (GUILayout.Button("Setup"))
-                {
-                    Target.Setup();    
-                }
-                
-                return;
+                Target.Setup();    
             }
-
+            
             _editMode = EditorGUILayout.ToggleLeft("Edit Mode", _editMode);
             Tools.hidden = _editMode;
 
@@ -204,11 +199,6 @@ namespace AffenCode.VoxelTerrain
                 return;
             }
             
-            if (!Target.Mesh)
-            {
-                return;
-            }
-            
             Selection.activeGameObject = Target.gameObject;
 
             ProcessSelectedBlocks();
@@ -310,7 +300,7 @@ namespace AffenCode.VoxelTerrain
                         {
                             ref var block = ref Target.GetBlock(_hoveredBlockPosition);
                             block.Void = true;
-                            Target.GenerateMesh();
+                            Target.GenerateChunkMeshes();
                         }
                     }
                 }
@@ -440,7 +430,7 @@ namespace AffenCode.VoxelTerrain
 
         private void ForceRedrawSceneView()
         {
-            SceneView.RepaintAll();
+            // SceneView.RepaintAll();
         }
 
         private void GenericMenuSetLayer(object userData)
