@@ -23,7 +23,7 @@ namespace AffenCode.VoxelTerrain
         [SerializeField] private MeshCollider _meshCollider;
 
         [Header("Blocks")] 
-        public Block[,,] Blocks;
+        [HideInInspector] [SerializeField] private Block[,,] _blocks;
         
         public Mesh Mesh => _mesh;
         public GameObject MeshObject => _meshObject;
@@ -34,11 +34,24 @@ namespace AffenCode.VoxelTerrain
         [ContextMenu("Setup")]
         public void Setup()
         {
+            SetupComponents();
+            ResetMesh();
+        }
+
+        public void ResetMesh()
+        {
+            GenerateEmptyMesh();
+            
+            _blocks = new Block[WorldSize.x, WorldSize.y, WorldSize.z];
+        }
+
+        private void SetupComponents()
+        {
             if (_meshObject)
             {
                 return;
             }
-            
+
             _meshObject = new GameObject("World Mesh");
             _meshObject.transform.SetParent(transform);
             _meshObject.transform.localPosition = Vector3.zero;
@@ -46,22 +59,15 @@ namespace AffenCode.VoxelTerrain
             _meshObject.transform.localScale = Vector3.one;
 
             _meshFilter = _meshObject.AddComponent<MeshFilter>();
-            _meshRenderer = _meshObject.AddComponent<MeshRenderer>();
-
-            _mesh = new Mesh();
-            GenerateEmptyMesh();
-            _meshFilter.sharedMesh = _mesh;
-
-            _meshRenderer.sharedMaterial = WorldMaterial;
-            
             _meshCollider = _meshObject.AddComponent<MeshCollider>();
-
-            Blocks = new Block[WorldSize.x, WorldSize.y, WorldSize.z];
+            _meshRenderer = _meshObject.AddComponent<MeshRenderer>();
+            _meshRenderer.sharedMaterial = WorldMaterial;
         }
 
-        [ContextMenu("Generate Empty Mesh")]
-        public void GenerateEmptyMesh()
+        private void GenerateEmptyMesh()
         {
+            _mesh = new Mesh();
+            
             var xSize = WorldSize.x;
             var zSize = WorldSize.z;
             
@@ -98,6 +104,8 @@ namespace AffenCode.VoxelTerrain
 
             _mesh.triangles = triangles;
             _mesh.RecalculateNormals();
+            
+            _meshFilter.sharedMesh = _mesh;
         }
     }
 }

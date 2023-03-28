@@ -22,38 +22,24 @@ namespace AffenCode.VoxelTerrain
         private Vector3 _lastMouseWorldPosition;
         private Vector3Int _hoveredBlockPosition;
 
-        private Vector3 _handlePositionOnSelection;
-        private Vector3 _handlePositionOnChanging;
+        private WorldTool _tool = WorldTool.None;
         
-        public override void OnInspectorGUI()
+        
+        private GUIStyle _normalButtonGuiStyleLeft;
+        private GUIStyle _activeButtonGuiStyleLeft;
+        private GUIStyle _normalButtonGuiStyleMid;
+        private GUIStyle _activeButtonGuiStyleMid;
+        private GUIStyle _normalButtonGuiStyleRight;
+        private GUIStyle _activeButtonGuiStyleRight;
+
+        public void Awake()
         {
-            base.OnInspectorGUI();
-
-            if (!Target.Mesh)
-            {
-                if (GUILayout.Button("Setup"))
-                {
-                    Target.Setup();    
-                }
-                
-                return;
-            }
-
-            if (GUILayout.Button("Edit Mode"))
-            {
-                _editMode = !_editMode;
-                Tools.hidden = _editMode;
-            }
-
-            if (_editMode)
-            {
-                DrawEditMode();
-            }
-        }
-
-        private void DrawEditMode()
-        {
-            
+            _normalButtonGuiStyleLeft = new GUIStyle(EditorStyles.miniButtonLeft);
+            _activeButtonGuiStyleLeft = new GUIStyle(EditorStyles.miniButtonLeft);
+            _normalButtonGuiStyleMid = new GUIStyle(EditorStyles.miniButtonMid);
+            _activeButtonGuiStyleMid = new GUIStyle(EditorStyles.miniButtonMid);
+            _normalButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
+            _activeButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
         }
 
         public void OnEnable()
@@ -66,6 +52,90 @@ namespace AffenCode.VoxelTerrain
         {
             EditorApplication.update -= ForceRedrawSceneView;
             SceneView.duringSceneGui -= OnScene;
+        }
+        
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+            
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
+            if (!Target.Mesh)
+            {
+                if (GUILayout.Button("Setup"))
+                {
+                    Target.Setup();    
+                }
+                
+                return;
+            }
+
+            _editMode = EditorGUILayout.ToggleLeft("Edit Mode", _editMode);
+            Tools.hidden = _editMode;
+
+            if (_editMode)
+            {
+                EditorGUILayout.Space();
+                DrawEditMode();
+            }
+        }
+
+        private void DrawEditMode()
+        {
+            InspectorDrawTools();
+        }
+
+        private void InspectorDrawTools()
+        {
+            EditorGUILayout.BeginVertical();
+            
+            EditorGUILayout.LabelField("Tools", EditorStyles.boldLabel);
+
+            EditorGUILayout.BeginHorizontal();
+            
+            if (GUILayout.Button("-", _tool == WorldTool.None ? _activeButtonGuiStyleLeft : _normalButtonGuiStyleLeft))
+            {
+                _tool = WorldTool.None;
+            }
+            
+            if (GUILayout.Button("Add B", _tool == WorldTool.AddBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            {
+                _tool = WorldTool.AddBlock;
+            }
+            if (GUILayout.Button("Remove B", _tool == WorldTool.RemoveBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            {
+                _tool = WorldTool.RemoveBlock;
+            }
+            
+            if (GUILayout.Button("Select B", _tool == WorldTool.SelectBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            {
+                _tool = WorldTool.SelectBlock;
+            }
+            if (GUILayout.Button("Select F", _tool == WorldTool.SelectFace ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            {
+                _tool = WorldTool.SelectFace;
+            }
+            
+            if (GUILayout.Button("Paint B", _tool == WorldTool.PaintBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
+            {
+                _tool = WorldTool.PaintBlock;
+            }
+            if (GUILayout.Button("Paint F", _tool == WorldTool.PaintFace ? _activeButtonGuiStyleRight : _normalButtonGuiStyleRight))
+            {
+                _tool = WorldTool.PaintFace;
+            }
+            
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.Space();
+            
+            EditorGUILayout.LabelField("Selected Tool", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(_tool.ToString(), EditorStyles.label);
+            
+
+            EditorGUILayout.EndVertical();
         }
 
         private void OnScene(SceneView sceneView)
@@ -99,16 +169,6 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(GetPolygon(selectedBlock));
             };
-
-            // if (_selectedBlocks.Count > 0)
-            // {
-            //     EditorGUI.BeginChangeCheck();
-            //     _handlePositionOnChanging = Handles.PositionHandle(_handlePositionOnChanging, Quaternion.identity);
-            //     if (EditorGUI.EndChangeCheck())
-            //     {
-            //         var heightDifference = _handlePositionOnChanging.y - _handlePositionOnSelection.y;
-            //     }
-            // }
         }
 
         private void ProcessBlockSelection()
@@ -178,22 +238,6 @@ namespace AffenCode.VoxelTerrain
                             _selectedBlocks.Clear();
                             _selectedBlocks.Add(_hoveredBlockPosition);
                         }
-                        
-                        var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-                        var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-                        foreach (var selectedBlock in _selectedBlocks)
-                        {
-                            max.x = Mathf.Max(selectedBlock.x, max.x);
-                            max.y = Mathf.Max(selectedBlock.y, max.y);
-                            max.z = Mathf.Max(selectedBlock.z, max.z);
-                    
-                            min.x = Mathf.Min(selectedBlock.x, min.x);
-                            min.y = Mathf.Min(selectedBlock.y, min.y);
-                            min.z = Mathf.Min(selectedBlock.z, min.z);
-                        }
-                        
-                        _handlePositionOnSelection = 0.5f * (max + min)  + new Vector3(0.5f, 0, 0.5f);
-                        _handlePositionOnChanging = _handlePositionOnSelection;
                     }
                 }
             }
