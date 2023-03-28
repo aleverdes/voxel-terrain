@@ -226,7 +226,7 @@ namespace AffenCode.VoxelTerrain
             Handles.color = SelectedBlockColor;
             foreach (var selectedBlock in _selectedBlocks)
             {
-                Handles.DrawAAConvexPolygon(GetPolygon(selectedBlock));
+                DrawBlockSelection(selectedBlock);
             };
         }
 
@@ -244,12 +244,18 @@ namespace AffenCode.VoxelTerrain
             Handles.color = SelectorColor;
             
             var cellPosition = mouseWorldPosition;
-            cellPosition.x = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.x); 
-            cellPosition.y = Target.BlockSize + Mathf.FloorToInt(mouseWorldPosition.y - 0.5f); 
-            cellPosition.z = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.z); 
-            _hoveredBlockPosition = ToVector3Int(cellPosition);
             
-            Handles.DrawAAConvexPolygon(GetPolygon(_hoveredBlockPosition));
+            cellPosition.x = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.x); 
+            cellPosition.y = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.y - 0.001f); 
+            cellPosition.z = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.z);
+
+            cellPosition.x = Mathf.Clamp(cellPosition.x, 0, Target.WorldSize.x - 1);
+            cellPosition.y = Mathf.Clamp(cellPosition.y, 0, Target.WorldSize.y - 1);
+            cellPosition.z = Mathf.Clamp(cellPosition.z, 0, Target.WorldSize.z - 1);
+            
+            _hoveredBlockPosition = ToVector3Int(cellPosition);
+
+            DrawBlockSelection(_hoveredBlockPosition);
         }
 
         private void ProcessEvents()
@@ -281,39 +287,155 @@ namespace AffenCode.VoxelTerrain
                     }
                     else
                     {
-                        if (modeShiftKey)
+                        if (_tool == WorldTool.SelectBlock)
                         {
-                            if (_selectedBlocks.Contains(_hoveredBlockPosition))
+                            if (modeShiftKey)
                             {
-                                _selectedBlocks.Remove(_hoveredBlockPosition);
+                                if (_selectedBlocks.Contains(_hoveredBlockPosition))
+                                {
+                                    _selectedBlocks.Remove(_hoveredBlockPosition);
+                                }
+                                else
+                                {
+                                    _selectedBlocks.Add(_hoveredBlockPosition);
+                                }
                             }
                             else
                             {
+                                _selectedBlocks.Clear();
                                 _selectedBlocks.Add(_hoveredBlockPosition);
                             }
                         }
-                        else
+                        else if (_tool == WorldTool.RemoveBlock)
                         {
-                            _selectedBlocks.Clear();
-                            _selectedBlocks.Add(_hoveredBlockPosition);
+                            ref var block = ref Target.GetBlock(_hoveredBlockPosition);
+                            block.Void = true;
+                            Target.GenerateMesh();
                         }
                     }
                 }
             }
         }
 
-        private Vector3[] GetPolygon(Vector3 cellPosition)
+        private void DrawBlockSelection(Vector3Int blockPosition)
         {
-            var cellSize = Target.BlockSize * 0.5f;
-            var blockPosition = new[]
+            if (blockPosition.x > Target.WorldSize.x - 1 || blockPosition.x < 0)
             {
-                cellPosition + new Vector3(2f * cellSize, 0f, 2f * cellSize),
-                cellPosition + new Vector3(0, 0f, 2f * cellSize),
-                cellPosition + new Vector3(0, 0f, 0),
-                cellPosition + new Vector3(2f * cellSize, 0f, 0),
-                cellPosition + new Vector3(2f * cellSize, 0f, 2f * cellSize)
-            };
-            return blockPosition;
+                return;
+            }
+
+            if (blockPosition.y > Target.WorldSize.y - 1 || blockPosition.y < 0)
+            {
+                return;
+            }
+
+            if (blockPosition.z > Target.WorldSize.z - 1 || blockPosition.z < 0)
+            {
+                return;
+            }
+            
+            var blockSize = Target.BlockSize * 0.5f;
+
+            ref var block = ref Target.GetBlock(blockPosition);
+
+            if (block.Void)
+            {
+                Debug.LogError("HOW?");
+                return;
+            }
+
+            var face = default(Face);
+            var t = 2f * blockSize;
+            
+            face = block.Top;
+            if (face.Draw 
+                && (block.Position.y < Target.WorldSize.y - 1 && Target.GetBlock(blockPosition.x, blockPosition.y + 1, blockPosition.z).Void
+                    || block.Position.y == Target.WorldSize.y - 1))
+            {
+                Handles.DrawAAConvexPolygon(new[]
+                {
+                    blockPosition + new Vector3(t, t, t),
+                    blockPosition + new Vector3(0, t, t),
+                    blockPosition + new Vector3(0, t, 0),
+                    blockPosition + new Vector3(t, t, 0),
+                    blockPosition + new Vector3(t, t, t)
+                });
+            }
+            
+            face = block.Bottom;
+            if (face.Draw 
+                && (block.Position.y > 0 && Target.GetBlock(blockPosition.x, blockPosition.y - 1, blockPosition.z).Void
+                    || block.Position.y == 0))
+            {
+                Handles.DrawAAConvexPolygon(new[]
+                {
+                    blockPosition + new Vector3(t, 0, t),
+                    blockPosition + new Vector3(0, 0, t),
+                    blockPosition + new Vector3(0, 0, 0),
+                    blockPosition + new Vector3(t, 0, 0),
+                    blockPosition + new Vector3(t, 0, t)
+                });
+            }
+            
+            face = block.Forward;
+            if (face.Draw 
+                && (block.Position.z < Target.WorldSize.z - 1 && Target.GetBlock(blockPosition.x, blockPosition.y, blockPosition.z + 1).Void
+                    || block.Position.z == Target.WorldSize.z - 1))
+            {
+                Handles.DrawAAConvexPolygon(new[]
+                {
+                    blockPosition + new Vector3(t, t, t),
+                    blockPosition + new Vector3(0, t, t),
+                    blockPosition + new Vector3(0, 0, t),
+                    blockPosition + new Vector3(t, 0, t),
+                    blockPosition + new Vector3(t, t, t)
+                });
+            }
+            
+            face = block.Back;
+            if (face.Draw 
+                && (block.Position.z > 0 && Target.GetBlock(blockPosition.x, blockPosition.y, blockPosition.z - 1).Void
+                    || block.Position.z == 0))
+            {
+                Handles.DrawAAConvexPolygon(new[]
+                {
+                    blockPosition + new Vector3(t, t, 0),
+                    blockPosition + new Vector3(0, t, 0),
+                    blockPosition + new Vector3(0, 0, 0),
+                    blockPosition + new Vector3(t, 0, 0),
+                    blockPosition + new Vector3(t, t, 0)
+                });
+            }
+            
+            face = block.Left;
+            if (face.Draw 
+                && (block.Position.x > 0 && Target.GetBlock(blockPosition.x - 1, blockPosition.y, blockPosition.z).Void
+                    || block.Position.x == 0))
+            {
+                Handles.DrawAAConvexPolygon(new[]
+                {
+                    blockPosition + new Vector3(0, t, t),
+                    blockPosition + new Vector3(0, t, 0),
+                    blockPosition + new Vector3(0, 0, 0),
+                    blockPosition + new Vector3(0, 0, t),
+                    blockPosition + new Vector3(0, t, t)
+                });
+            }
+            
+            face = block.Right;
+            if (face.Draw 
+                && (block.Position.x < Target.WorldSize.x - 1 && Target.GetBlock(blockPosition.x + 1, blockPosition.y, blockPosition.z).Void
+                    || block.Position.x == Target.WorldSize.x - 1))
+            {
+                Handles.DrawAAConvexPolygon(new[]
+                {
+                    blockPosition + new Vector3(t, t, t),
+                    blockPosition + new Vector3(t, t, 0),
+                    blockPosition + new Vector3(t, 0, 0),
+                    blockPosition + new Vector3(t, 0, t),
+                    blockPosition + new Vector3(t, t, t)
+                });
+            }
         }
 
         private void ForceRedrawSceneView()

@@ -23,7 +23,7 @@ namespace AffenCode.VoxelTerrain
         [SerializeField] private MeshCollider _meshCollider;
 
         [Header("Blocks")] 
-        [HideInInspector] [SerializeField] private Block[,,] _blocks;
+        [HideInInspector] [SerializeField] private Block[] _blocks;
         
         public Mesh Mesh => _mesh;
         public GameObject MeshObject => _meshObject;
@@ -36,19 +36,18 @@ namespace AffenCode.VoxelTerrain
         {
             SetupComponents();
             ResetMesh();
-            _meshFilter.sharedMesh = _mesh;
         }
 
         public void ResetMesh()
         {
-            _blocks = new Block[WorldSize.x, WorldSize.y, WorldSize.z];
-            for (int x = 0; x < _blocks.GetLength(0); x++)
+            _blocks = new Block[WorldSize.x * WorldSize.y * WorldSize.z];
+            for (int x = 0; x < WorldSize.x; x++)
             {
-                for (int y = 0; y < _blocks.GetLength(1); y++)
+                for (int y = 0; y < WorldSize.y; y++)
                 {
-                    for (int z = 0; z < _blocks.GetLength(2); z++)
+                    for (int z = 0; z < WorldSize.z; z++)
                     {
-                        ref var block = ref _blocks[x, y, z];
+                        ref var block = ref GetBlock(x, y, z);
                         block.Void = true;
 
                         block.Position = new Vector3Int(x, y, z);
@@ -93,20 +92,22 @@ namespace AffenCode.VoxelTerrain
                 }
             }
 
-            var halfHeight = _blocks.GetLength(1) / 2;
-            for (int x = 0; x < _blocks.GetLength(0); x++)
+            var halfHeight = WorldSize.y / 2;
+            for (int x = 0; x < WorldSize.x; x++)
             {
                 for (int y = 0; y < halfHeight; y++)
                 {
-                    for (int z = 0; z < _blocks.GetLength(2); z++)
+                    for (int z = 0; z < WorldSize.z; z++)
                     {
-                        ref var block = ref _blocks[x, y, z];
+                        ref var block = ref GetBlock(x, y, z);
                         block.Void = false;
                     }
                 }
             }
             
+            _mesh = new Mesh();
             GenerateMesh();
+            _meshFilter.sharedMesh = _mesh;
         }
 
         public void SetupComponents()
@@ -128,10 +129,8 @@ namespace AffenCode.VoxelTerrain
             _meshRenderer.sharedMaterial = WorldMaterial;
         }
 
-        private void GenerateMesh()
+        public void GenerateMesh()
         {
-            _mesh = new Mesh();
-            
             var xSize = WorldSize.x;
             var ySize = WorldSize.y;
             var zSize = WorldSize.z;
@@ -145,13 +144,13 @@ namespace AffenCode.VoxelTerrain
 
             var trianglesCount = 0;
             
-            for (int x = 0; x < _blocks.GetLength(0); x++)
+            for (int x = 0; x < WorldSize.x; x++)
             {
-                for (int y = 0; y < _blocks.GetLength(1); y++)
+                for (int y = 0; y < WorldSize.y; y++)
                 {
-                    for (int z = 0; z < _blocks.GetLength(2); z++)
+                    for (int z = 0; z < WorldSize.z; z++)
                     {
-                        ref var block = ref _blocks[x, y, z];
+                        ref var block = ref GetBlock(x, y, z);
 
                         if (block.Void)
                         {
@@ -161,7 +160,7 @@ namespace AffenCode.VoxelTerrain
                         var face = default(Face);
 
                         face = block.Left;
-                        if (face.Draw && (block.Position.x > 0 && _blocks[x - 1, y, z].Void || block.Position.x == 0))
+                        if (face.Draw && (block.Position.x > 0 && GetBlock(x - 1, y, z).Void || block.Position.x == 0))
                         {
                             vertices.AddRange(new []
                             {
@@ -202,7 +201,7 @@ namespace AffenCode.VoxelTerrain
                         }
 
                         face = block.Right;
-                        if (face.Draw && (block.Position.x < xSize - 1 && _blocks[x + 1, y, z].Void || block.Position.x == xSize - 1))
+                        if (face.Draw && (block.Position.x < xSize - 1 && GetBlock(x + 1, y, z).Void || block.Position.x == xSize - 1))
                         {
                             vertices.AddRange(new []
                             {
@@ -243,7 +242,7 @@ namespace AffenCode.VoxelTerrain
                         }
 
                         face = block.Top;
-                        if (face.Draw && (block.Position.y < ySize - 1 && _blocks[x, y + 1, z].Void || block.Position.y == ySize - 1))
+                        if (face.Draw && (block.Position.y < ySize - 1 && GetBlock(x, y + 1, z).Void || block.Position.y == ySize - 1))
                         {
                             vertices.AddRange(new []
                             {
@@ -284,7 +283,7 @@ namespace AffenCode.VoxelTerrain
                         }
 
                         face = block.Bottom;
-                        if (face.Draw && (block.Position.y > 0 && _blocks[x, y - 1, z].Void || block.Position.y == 0))
+                        if (face.Draw && (block.Position.y > 0 && GetBlock(x, y - 1, z).Void || block.Position.y == 0))
                         {
                             vertices.AddRange(new []
                             {
@@ -325,7 +324,7 @@ namespace AffenCode.VoxelTerrain
                         }
 
                         face = block.Back;
-                        if (face.Draw && (block.Position.z > 0 && _blocks[x, y, z - 1].Void || block.Position.z == 0))
+                        if (face.Draw && (block.Position.z > 0 && GetBlock(x, y, z - 1).Void || block.Position.z == 0))
                         {
                             vertices.AddRange(new []
                             {
@@ -366,7 +365,7 @@ namespace AffenCode.VoxelTerrain
                         }
                         
                         face = block.Forward;
-                        if (face.Draw && (block.Position.z < zSize - 1 && _blocks[x, y, z + 1].Void || block.Position.z == zSize - 1))
+                        if (face.Draw && (block.Position.z < zSize - 1 && GetBlock(x, y, z + 1).Void || block.Position.z == zSize - 1))
                         {
                             vertices.AddRange(new []
                             {
@@ -417,6 +416,25 @@ namespace AffenCode.VoxelTerrain
             _mesh.triangles = triangles.ToArray();
             
             _mesh.RecalculateNormals();
+            _meshCollider.sharedMesh = _mesh;
+        }
+
+        public ref Block GetBlock(Vector3Int position)
+        {
+            return ref GetBlock(position.x, position.y, position.z);
+        }
+
+        public ref Block GetBlock(int x, int y, int z)
+        {
+            try
+            {
+                return ref _blocks[x + y * WorldSize.x + z * WorldSize.x * WorldSize.y];
+            }
+            catch (Exception e)
+            { 
+                Debug.LogError($"Wrong bounce: x[{x}], y[{y}], z[{z}]; world ({WorldSize.x}, {WorldSize.y}, {WorldSize.z}); formula is {x + y * WorldSize.x + z * WorldSize.x * WorldSize.y} (max is {WorldSize.x * WorldSize.y * WorldSize.z})");
+                throw;
+            }
         }
     }
 }
