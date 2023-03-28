@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae332f14c6044be68214e6f96e3f48b4, type: 3}
+  m_Name: Layer 9 - Roots
+  m_EditorClassIdentifier: 
+  Textures:
+  - {fileID: 2800000, guid: 15843e2c32d4c46d987eac5154884df3, type: 3}
+  - {fileID: 2800000, guid: a9086aefef38b423fa1d9ed03b52ad59, type: 3}
+  - {fileID: 2800000, guid: b5883d954626a40f0901f9762c77e512, type: 3}

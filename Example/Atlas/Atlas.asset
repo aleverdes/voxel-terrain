@@ -1,0 +1,169 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 461ffb756aad4f89b74b0d5367e5a9c5, type: 3}
+  m_Name: Atlas
+  m_EditorClassIdentifier: 
+  Size: 512
+  TextureSize: 32
+  Layers:
+  - {fileID: 11400000, guid: 426191a27ff80434a810d25ef2eccea6, type: 2}
+  - {fileID: 11400000, guid: f112bed88c09d404d9e2c51c47edfbc8, type: 2}
+  - {fileID: 11400000, guid: 03b8f9e60a9b247c99c54ba6bd6369fd, type: 2}
+  - {fileID: 11400000, guid: 322b4747afa744736be3f0a10d08f944, type: 2}
+  - {fileID: 11400000, guid: 24adbaa425520475e9fe1de95d65eff6, type: 2}
+  - {fileID: 11400000, guid: c21030359178443f98c0463a234b23c1, type: 2}
+  - {fileID: 11400000, guid: 977c1e7f9aaf64c37a176403ebc48e23, type: 2}
+  - {fileID: 11400000, guid: e5badcfb31f6f46319c9907b54a88b41, type: 2}
+  - {fileID: 11400000, guid: 7a62f3c66cb734c8ea155900f0a5742d, type: 2}
+  - {fileID: 11400000, guid: 98bc9787be5b04c58bb93dc93c1afe9e, type: 2}
+  TextureAtlas: {fileID: 2800000, guid: e09625727b0a74545b8be08ed69106f0, type: 3}
+  AtlasTextures:
+  - LayerIndex: 0
+    LayerTextureIndex: 0
+    UvPosition: {x: 0, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 0
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.0625, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 0
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.125, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 0
+    LayerTextureIndex: 3
+    UvPosition: {x: 0.1875, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 0
+    LayerTextureIndex: 4
+    UvPosition: {x: 0.25, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 1
+    LayerTextureIndex: 0
+    UvPosition: {x: 0.3125, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 2
+    LayerTextureIndex: 0
+    UvPosition: {x: 0.375, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 2
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.4375, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 2
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.5, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 3
+    LayerTextureIndex: 0
+    UvPosition: {x: 0.5625, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 3
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.625, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 3
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.6875, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 4
+    LayerTextureIndex: 0
+    UvPosition: {x: 0.75, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 4
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.8125, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 4
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.875, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 5
+    LayerTextureIndex: 0
+    UvPosition: {x: 0.9375, y: 0}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 6
+    LayerTextureIndex: 0
+    UvPosition: {x: 0, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 6
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.0625, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 6
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.125, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 6
+    LayerTextureIndex: 3
+    UvPosition: {x: 0.1875, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 6
+    LayerTextureIndex: 4
+    UvPosition: {x: 0.25, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 6
+    LayerTextureIndex: 5
+    UvPosition: {x: 0.3125, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 7
+    LayerTextureIndex: 0
+    UvPosition: {x: 0.375, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 7
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.4375, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 7
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.5, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 8
+    LayerTextureIndex: 0
+    UvPosition: {x: 0.5625, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 8
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.625, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 8
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.6875, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 8
+    LayerTextureIndex: 3
+    UvPosition: {x: 0.75, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 8
+    LayerTextureIndex: 4
+    UvPosition: {x: 0.8125, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 8
+    LayerTextureIndex: 5
+    UvPosition: {x: 0.875, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 8
+    LayerTextureIndex: 6
+    UvPosition: {x: 0.9375, y: 0.0625}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 9
+    LayerTextureIndex: 0
+    UvPosition: {x: 0, y: 0.125}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 9
+    LayerTextureIndex: 1
+    UvPosition: {x: 0.0625, y: 0.125}
+    UvSize: {x: 0.0625, y: 0.0625}
+  - LayerIndex: 9
+    LayerTextureIndex: 2
+    UvPosition: {x: 0.125, y: 0.125}
+    UvSize: {x: 0.0625, y: 0.0625}

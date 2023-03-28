@@ -95,7 +95,7 @@ namespace AffenCode.VoxelTerrain
 
             EditorGUILayout.BeginHorizontal();
             
-            if (GUILayout.Button("-", _tool == WorldTool.None ? _activeButtonGuiStyleLeft : _normalButtonGuiStyleLeft))
+            if (GUILayout.Button("None", _tool == WorldTool.None ? _activeButtonGuiStyleLeft : _normalButtonGuiStyleLeft))
             {
                 _tool = WorldTool.None;
             }
@@ -156,9 +156,14 @@ namespace AffenCode.VoxelTerrain
             }
             
             Selection.activeGameObject = Target.gameObject;
-            
+
             ProcessSelectedBlocks();
-            ProcessBlockSelection();
+            
+            if (_tool != WorldTool.None)
+            {
+                ProcessBlockSelection();
+            }
+            
             ProcessEvents();
         }
 

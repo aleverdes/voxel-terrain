@@ -12,8 +12,6 @@ namespace AffenCode.VoxelTerrain
         public float BlockSize = 1f;
         public Material WorldMaterial;
         public Atlas WorldAtlas;
-        
-        [Range(0.01f, 50f)] public float BrushSize = 3f;
 
         [Header("Mesh")]
         [SerializeField] private Mesh _mesh;
