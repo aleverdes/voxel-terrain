@@ -235,9 +235,9 @@ namespace AffenCode.VoxelTerrain
             
             var cellPosition = mouseWorldPosition;
             
-            cellPosition.x = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.x); 
-            cellPosition.y = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.y - 0.001f); 
-            cellPosition.z = Target.BlockSize * 0.5f + Mathf.FloorToInt(mouseWorldPosition.z);
+            cellPosition.x = (mouseWorldPosition.x) / Target.BlockSize; 
+            cellPosition.y = (mouseWorldPosition.y - 0.001f) / Target.BlockSize; 
+            cellPosition.z = (mouseWorldPosition.z) / Target.BlockSize;
 
             cellPosition.x = Mathf.Clamp(cellPosition.x, 0, Target.WorldSize.x - 1);
             cellPosition.y = Mathf.Clamp(cellPosition.y, 0, Target.WorldSize.y - 1);
@@ -323,19 +323,19 @@ namespace AffenCode.VoxelTerrain
             {
                 return;
             }
-            
-            var blockSize = Target.BlockSize * 0.5f;
 
             ref var block = ref Target.GetBlock(blockPosition);
 
             if (block.Void)
             {
-                Debug.LogError("HOW?");
                 return;
             }
 
+            var t = Target.BlockSize;
+            var position = (Vector3) blockPosition;
+            position *= t;
+
             var face = default(Face);
-            var t = 2f * blockSize;
             
             face = block.Top;
             if (face.Draw 
@@ -344,11 +344,11 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
-                    blockPosition + new Vector3(t, t, t),
-                    blockPosition + new Vector3(0, t, t),
-                    blockPosition + new Vector3(0, t, 0),
-                    blockPosition + new Vector3(t, t, 0),
-                    blockPosition + new Vector3(t, t, t)
+                    position + new Vector3(t, t, t),
+                    position + new Vector3(0, t, t),
+                    position + new Vector3(0, t, 0),
+                    position + new Vector3(t, t, 0),
+                    position + new Vector3(t, t, t)
                 });
             }
             
@@ -359,11 +359,11 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
-                    blockPosition + new Vector3(t, 0, t),
-                    blockPosition + new Vector3(0, 0, t),
-                    blockPosition + new Vector3(0, 0, 0),
-                    blockPosition + new Vector3(t, 0, 0),
-                    blockPosition + new Vector3(t, 0, t)
+                    position + new Vector3(t, 0, t),
+                    position + new Vector3(0, 0, t),
+                    position + new Vector3(0, 0, 0),
+                    position + new Vector3(t, 0, 0),
+                    position + new Vector3(t, 0, t)
                 });
             }
             
@@ -374,11 +374,11 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
-                    blockPosition + new Vector3(t, t, t),
-                    blockPosition + new Vector3(0, t, t),
-                    blockPosition + new Vector3(0, 0, t),
-                    blockPosition + new Vector3(t, 0, t),
-                    blockPosition + new Vector3(t, t, t)
+                    position + new Vector3(t, t, t),
+                    position + new Vector3(0, t, t),
+                    position + new Vector3(0, 0, t),
+                    position + new Vector3(t, 0, t),
+                    position + new Vector3(t, t, t)
                 });
             }
             
@@ -389,11 +389,11 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
-                    blockPosition + new Vector3(t, t, 0),
-                    blockPosition + new Vector3(0, t, 0),
-                    blockPosition + new Vector3(0, 0, 0),
-                    blockPosition + new Vector3(t, 0, 0),
-                    blockPosition + new Vector3(t, t, 0)
+                    position + new Vector3(t, t, 0),
+                    position + new Vector3(0, t, 0),
+                    position + new Vector3(0, 0, 0),
+                    position + new Vector3(t, 0, 0),
+                    position + new Vector3(t, t, 0)
                 });
             }
             
@@ -404,11 +404,11 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
-                    blockPosition + new Vector3(0, t, t),
-                    blockPosition + new Vector3(0, t, 0),
-                    blockPosition + new Vector3(0, 0, 0),
-                    blockPosition + new Vector3(0, 0, t),
-                    blockPosition + new Vector3(0, t, t)
+                    position + new Vector3(0, t, t),
+                    position + new Vector3(0, t, 0),
+                    position + new Vector3(0, 0, 0),
+                    position + new Vector3(0, 0, t),
+                    position + new Vector3(0, t, t)
                 });
             }
             
@@ -419,18 +419,18 @@ namespace AffenCode.VoxelTerrain
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
-                    blockPosition + new Vector3(t, t, t),
-                    blockPosition + new Vector3(t, t, 0),
-                    blockPosition + new Vector3(t, 0, 0),
-                    blockPosition + new Vector3(t, 0, t),
-                    blockPosition + new Vector3(t, t, t)
+                    position + new Vector3(t, t, t),
+                    position + new Vector3(t, t, 0),
+                    position + new Vector3(t, 0, 0),
+                    position + new Vector3(t, 0, t),
+                    position + new Vector3(t, t, t)
                 });
             }
         }
 
         private void ForceRedrawSceneView()
         {
-            // SceneView.RepaintAll();
+            SceneView.RepaintAll();
         }
 
         private void GenericMenuSetLayer(object userData)
