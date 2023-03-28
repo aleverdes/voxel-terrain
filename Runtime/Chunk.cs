@@ -82,7 +82,7 @@ namespace AffenCode.VoxelTerrain
                             continue;
                         }
 
-                        var face = default(Face);
+                        var face = default(BlockFace);
 
                         face = block.Left;
                         if (face.Draw && (block.Position.x > 0 && _world.GetBlock(x - 1, y, z).Void || block.Position.x == 0))

@@ -31,6 +31,8 @@ namespace AffenCode.VoxelTerrain
         private GUIStyle _normalButtonGuiStyleRight;
         private GUIStyle _activeButtonGuiStyleRight;
 
+        private float _heightChangingBrushSize = 0.5f;
+        
         public void Awake()
         {
             _normalButtonGuiStyleLeft = new GUIStyle(EditorStyles.miniButtonLeft);
@@ -39,6 +41,8 @@ namespace AffenCode.VoxelTerrain
             _activeButtonGuiStyleMid = new GUIStyle(EditorStyles.miniButtonMid);
             _normalButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
             _activeButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
+
+            _heightChangingBrushSize = Target.BlockSize * 4f;
         }
 
         public void OnEnable()
@@ -101,8 +105,8 @@ namespace AffenCode.VoxelTerrain
                 case WorldTool.PaintFace:
                     InspectorDrawPaintFaceTool();
                     break;
-                case WorldTool.ChangeHeight:
-                    InspectorDrawChangeHeightTool();
+                case WorldTool.VertexHeight:
+                    InspectorDrawVertexHeightTool();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -145,9 +149,9 @@ namespace AffenCode.VoxelTerrain
             {
                 _tool = WorldTool.PaintFace;
             }
-            if (GUILayout.Button("CH", _tool == WorldTool.ChangeHeight ? _activeButtonGuiStyleRight : _normalButtonGuiStyleRight))
+            if (GUILayout.Button("VH", _tool == WorldTool.VertexHeight ? _activeButtonGuiStyleRight : _normalButtonGuiStyleRight))
             {
-                _tool = WorldTool.ChangeHeight;
+                _tool = WorldTool.VertexHeight;
             }
             
             EditorGUILayout.EndHorizontal();
@@ -191,7 +195,7 @@ namespace AffenCode.VoxelTerrain
             
         }
 
-        private void InspectorDrawChangeHeightTool()
+        private void InspectorDrawVertexHeightTool()
         {
             
         }
@@ -216,13 +220,13 @@ namespace AffenCode.VoxelTerrain
             
             ProcessSelectedBlocks();
             
-            if (_tool != WorldTool.None && _tool != WorldTool.ChangeHeight)
+            if (_tool != WorldTool.None && _tool != WorldTool.VertexHeight)
             {
                 ProcessBlockSelection();
             }
-            else if (_tool == WorldTool.ChangeHeight)
+            else if (_tool == WorldTool.VertexHeight)
             {
-                ProcessHeightChanging();
+                ProcessVertexHeight();
             }
             
             ProcessEvents();
@@ -266,10 +270,11 @@ namespace AffenCode.VoxelTerrain
             DrawBlockSelection(_hoveredBlockPosition);
         }
 
-        private void ProcessHeightChanging()
+        private void ProcessVertexHeight()
         {
             Handles.color = Color.red;
-            Handles.DrawWireDisc(_mouseWorldPosition, Vector3.up, 0.5f, 3f);
+            Handles.DrawWireDisc(_mouseWorldPosition, Vector3.up, _heightChangingBrushSize, 3f);
+            Handles.DrawWireDisc(_mouseWorldPosition, Vector3.up, 0.01f, 3f);
         }
 
         private void ProcessEvents()
@@ -329,6 +334,25 @@ namespace AffenCode.VoxelTerrain
                     }
                 }
             }
+            else if (Event.current.isKey && Event.current.type == EventType.KeyDown)
+            {
+                if (_tool == WorldTool.VertexHeight)
+                {
+                    if (Event.current.keyCode is KeyCode.RightBracket)
+                    {
+                        _heightChangingBrushSize += 0.2f * Target.BlockSize;
+                        _heightChangingBrushSize = Mathf.Min(_heightChangingBrushSize, Mathf.Max(Target.ChunkSize.x, Target.ChunkSize.y));
+                    }
+                    else if (Event.current.keyCode is KeyCode.LeftBracket)
+                    {
+                        _heightChangingBrushSize -= 0.2f * Target.BlockSize;
+                        _heightChangingBrushSize = Mathf.Max(_heightChangingBrushSize, Target.BlockSize);
+                    }
+                }
+            }
+            else if (Event.current.type == EventType.KeyUp)
+            {
+            }
         }
 
         private void DrawBlockSelection(Vector3Int blockPosition)
@@ -359,7 +383,7 @@ namespace AffenCode.VoxelTerrain
             var position = (Vector3) blockPosition;
             position *= t;
 
-            var face = default(Face);
+            var face = default(BlockFace);
             
             face = block.Top;
             if (face.Draw 

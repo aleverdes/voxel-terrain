@@ -89,37 +89,37 @@ namespace AffenCode.VoxelTerrain
 
                         block.Position = new Vector3Int(x, y, z);
                         
-                        block.Top = new Face()
+                        block.Top = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
                             LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
                         };
-                        block.Bottom = new Face()
+                        block.Bottom = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
                             LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
                         };
-                        block.Left = new Face()
+                        block.Left = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
                             LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
                         };
-                        block.Right = new Face()
+                        block.Right = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
                             LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
                         };
-                        block.Forward = new Face()
+                        block.Forward = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
                             LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
                         };
-                        block.Back = new Face()
+                        block.Back = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
