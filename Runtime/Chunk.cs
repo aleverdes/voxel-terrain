@@ -51,6 +51,10 @@ namespace AffenCode.VoxelTerrain
             {
                 _mesh = new Mesh();
             }
+            else
+            {
+                _mesh.Clear();
+            }
             
             var xSize = WorldSize.x;
             var ySize = WorldSize.y;
