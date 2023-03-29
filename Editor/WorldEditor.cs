@@ -42,7 +42,7 @@ namespace AffenCode.VoxelTerrain
             _normalButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
             _activeButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
 
-            _heightChangingBrushSize = Target.BlockSize * 4f;
+            _heightChangingBrushSize = Target.BlockSize;
         }
 
         public void OnEnable()
@@ -341,12 +341,12 @@ namespace AffenCode.VoxelTerrain
                     if (Event.current.keyCode is KeyCode.RightBracket)
                     {
                         _heightChangingBrushSize += 0.2f * Target.BlockSize;
-                        _heightChangingBrushSize = Mathf.Min(_heightChangingBrushSize, Mathf.Max(Target.ChunkSize.x, Target.ChunkSize.y));
+                        _heightChangingBrushSize = Mathf.Min(_heightChangingBrushSize, 0.5f * Mathf.Max(Target.ChunkSize.x, Target.ChunkSize.y));
                     }
                     else if (Event.current.keyCode is KeyCode.LeftBracket)
                     {
                         _heightChangingBrushSize -= 0.2f * Target.BlockSize;
-                        _heightChangingBrushSize = Mathf.Max(_heightChangingBrushSize, Target.BlockSize);
+                        _heightChangingBrushSize = Mathf.Max(_heightChangingBrushSize, 0.5f * Target.BlockSize);
                     }
                 }
             }
