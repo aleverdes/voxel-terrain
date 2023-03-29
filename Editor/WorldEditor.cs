@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Rendering;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace AffenCode.VoxelTerrain
@@ -19,37 +21,21 @@ namespace AffenCode.VoxelTerrain
         private static readonly Color SelectorColor = new Color(1, 0, 0, 0.66f);
         private static readonly Color SelectedBlockColor = new Color(1, 0, 0, 0.33f);
 
-        private bool _editMode;
-
         private Vector3 _mouseWorldPosition;
         private Vector3Int _hoveredBlockPosition;
 
-        private WorldTool _tool = WorldTool.None;
-
         private VisualElement _rootVisualElement;
         private VisualTreeAsset _visualTreeAsset;
+        private Dictionary<WorldTool, Button> _toolbarButton = new();
         
-        private GUIStyle _normalButtonGuiStyleLeft;
-        private GUIStyle _activeButtonGuiStyleLeft;
-        private GUIStyle _normalButtonGuiStyleMid;
-        private GUIStyle _activeButtonGuiStyleMid;
-        private GUIStyle _normalButtonGuiStyleRight;
-        private GUIStyle _activeButtonGuiStyleRight;
-
         private float _heightChangingBrushSize = 0.5f;
-        
-        public void Awake()
+
+        private WorldTool Tool
         {
-            _normalButtonGuiStyleLeft = new GUIStyle(EditorStyles.miniButtonLeft);
-            _activeButtonGuiStyleLeft = new GUIStyle(EditorStyles.miniButtonLeft);
-            _normalButtonGuiStyleMid = new GUIStyle(EditorStyles.miniButtonMid);
-            _activeButtonGuiStyleMid = new GUIStyle(EditorStyles.miniButtonMid);
-            _normalButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
-            _activeButtonGuiStyleRight = new GUIStyle(EditorStyles.miniButtonRight);
-
-            _heightChangingBrushSize = Target.BlockSize;
+            get => Target.LastWorldTool;
+            set => Target.LastWorldTool = value;
         }
-
+        
         public void OnEnable()
         {
             EditorApplication.update += ForceRedrawSceneView;
@@ -67,6 +53,8 @@ namespace AffenCode.VoxelTerrain
             var stylesPath = Path.Combine(folderPath, "Visual/VoxelTerrainEditorStyles.uss");
             var styles = AssetDatabase.LoadAssetAtPath<StyleSheet>(stylesPath);
             _rootVisualElement.styleSheets.Add(styles);
+            
+            _heightChangingBrushSize = Target.BlockSize;
         }
 
         public void OnDisable()
@@ -81,20 +69,100 @@ namespace AffenCode.VoxelTerrain
 
             _visualTreeAsset.CloneTree(_rootVisualElement);
 
-            _rootVisualElement.Q<Button>("toolbar-button--add-block").clicked += () => { _tool = WorldTool.AddBlock; Debug.LogError("Add block"); };
-            _rootVisualElement.Q<Button>("toolbar-button--remove-block").clicked += () => { _tool = WorldTool.RemoveBlock; Debug.LogError("Remove block"); };
-            _rootVisualElement.Q<Button>("toolbar-button--select-block").clicked += () => { _tool = WorldTool.SelectBlock; Debug.LogError("Select block"); };
-            _rootVisualElement.Q<Button>("toolbar-button--select-face").clicked += () => { _tool = WorldTool.SelectFace; Debug.LogError("Select face"); };
-            _rootVisualElement.Q<Button>("toolbar-button--paint-block").clicked += () => { _tool = WorldTool.PaintBlock; Debug.LogError("Paint block"); };
-            _rootVisualElement.Q<Button>("toolbar-button--paint-face").clicked += () => { _tool = WorldTool.PaintFace; Debug.LogError("Paint face"); };
-            _rootVisualElement.Q<Button>("toolbar-button--vertex-height").clicked += () => { _tool = WorldTool.VertexHeight; Debug.LogError("Vertex height"); };
+            SetupToolbar();
             
             return _rootVisualElement;
         }
 
+        private void SetupToolbar()
+        {
+            _toolbarButton = new Dictionary<WorldTool, Button>()
+            { 
+                { WorldTool.AddBlock, _rootVisualElement.Q<Button>("toolbar-button--add-block") },
+                { WorldTool.RemoveBlock, _rootVisualElement.Q<Button>("toolbar-button--remove-block") },
+                { WorldTool.SelectBlock, _rootVisualElement.Q<Button>("toolbar-button--select-block") },
+                { WorldTool.SelectFace, _rootVisualElement.Q<Button>("toolbar-button--select-face") },
+                { WorldTool.PaintBlock, _rootVisualElement.Q<Button>("toolbar-button--paint-block") },
+                { WorldTool.PaintFace, _rootVisualElement.Q<Button>("toolbar-button--paint-face") },
+                { WorldTool.VertexHeight, _rootVisualElement.Q<Button>("toolbar-button--vertex-height") },
+            };
+            
+            _toolbarButton[WorldTool.AddBlock].RegisterCallback<ClickEvent>(SetAddBlockTool);
+            _toolbarButton[WorldTool.RemoveBlock].RegisterCallback<ClickEvent>(SetRemoveBlockTool);
+            _toolbarButton[WorldTool.SelectBlock].RegisterCallback<ClickEvent>(SetSelectBlockTool);
+            _toolbarButton[WorldTool.SelectFace].RegisterCallback<ClickEvent>(SetSelectFaceTool);
+            _toolbarButton[WorldTool.PaintBlock].RegisterCallback<ClickEvent>(SetPaintBlockTool);
+            _toolbarButton[WorldTool.PaintFace].RegisterCallback<ClickEvent>(SetPaintFaceTool);
+            _toolbarButton[WorldTool.VertexHeight].RegisterCallback<ClickEvent>(SetVertexHeightTool);
+            
+            UpdateToolbar();
+        }
+
+        private void SetAddBlockTool(ClickEvent clickEvent)
+        {
+            SetTool(WorldTool.AddBlock);
+        }
+
+        private void SetRemoveBlockTool(ClickEvent clickEvent)
+        {
+            SetTool(WorldTool.RemoveBlock);
+        }
+
+        private void SetSelectBlockTool(ClickEvent clickEvent)
+        {
+            SetTool(WorldTool.SelectBlock);
+        }
+
+        private void SetSelectFaceTool(ClickEvent clickEvent)
+        {
+            SetTool(WorldTool.SelectFace);
+        }
+
+        private void SetPaintBlockTool(ClickEvent clickEvent)
+        {
+            SetTool(WorldTool.PaintBlock);
+        }
+
+        private void SetPaintFaceTool(ClickEvent clickEvent)
+        {
+            SetTool(WorldTool.PaintFace);
+        }
+
+        private void SetVertexHeightTool(ClickEvent clickEvent)
+        {
+            SetTool(WorldTool.VertexHeight);
+        }
+
+        private void SetTool(WorldTool tool)
+        {
+            Tool = tool;
+            UpdateInspector();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        }
+
+        private void UpdateInspector()
+        {
+            UpdateToolbar();
+        }
+
+        private void UpdateToolbar()
+        {
+            foreach (var (worldTool, toolbarButton) in _toolbarButton)
+            {
+                if (worldTool == Tool)
+                {
+                    toolbarButton.AddToClassList("pressed");
+                }
+                else
+                {
+                    toolbarButton.RemoveFromClassList("pressed");
+                }
+            }
+        }
+        
         private void OnScene(SceneView sceneView)
         {
-            if (!_editMode)
+            if (Tool == WorldTool.None)
             {
                 return;
             }
@@ -112,11 +180,11 @@ namespace AffenCode.VoxelTerrain
             
             ProcessSelectedBlocks();
             
-            if (_tool != WorldTool.None && _tool != WorldTool.VertexHeight)
+            if (Tool != WorldTool.None && Tool != WorldTool.VertexHeight)
             {
                 ProcessBlockSelection();
             }
-            else if (_tool == WorldTool.VertexHeight)
+            else if (Tool == WorldTool.VertexHeight)
             {
                 ProcessVertexHeight();
             }
@@ -150,8 +218,10 @@ namespace AffenCode.VoxelTerrain
             var cellPosition = _mouseWorldPosition;
             
             cellPosition.x = _mouseWorldPosition.x / Target.BlockSize; 
-            cellPosition.y = (_mouseWorldPosition.y - 0.001f) / Target.BlockSize; 
+            cellPosition.y = _mouseWorldPosition.y / Target.BlockSize; 
             cellPosition.z = _mouseWorldPosition.z / Target.BlockSize;
+
+            cellPosition += SceneView.lastActiveSceneView.camera.transform.forward * 0.001f;
 
             cellPosition.x = Mathf.Clamp(cellPosition.x, 0, Target.WorldSize.x - 1);
             cellPosition.y = Mathf.Clamp(cellPosition.y, 0, Target.WorldSize.y - 1);
@@ -198,7 +268,7 @@ namespace AffenCode.VoxelTerrain
                     }
                     else
                     {
-                        if (_tool == WorldTool.SelectBlock)
+                        if (Tool == WorldTool.SelectBlock)
                         {
                             if (modeShiftKey)
                             {
@@ -217,18 +287,19 @@ namespace AffenCode.VoxelTerrain
                                 _selectedBlocks.Add(_hoveredBlockPosition);
                             }
                         }
-                        else if (_tool == WorldTool.RemoveBlock)
+                        else if (Tool == WorldTool.RemoveBlock)
                         {
                             ref var block = ref Target.GetBlock(_hoveredBlockPosition);
                             block.Void = true;
                             Target.GenerateChunkMeshes();
+                            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
                         }
                     }
                 }
             }
             else if (Event.current.isKey && Event.current.type == EventType.KeyDown)
             {
-                if (_tool == WorldTool.VertexHeight)
+                if (Tool == WorldTool.VertexHeight)
                 {
                     if (Event.current.keyCode is KeyCode.RightBracket)
                     {

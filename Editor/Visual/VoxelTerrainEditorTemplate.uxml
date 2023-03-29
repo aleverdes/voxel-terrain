@@ -4,22 +4,22 @@
         <ui:Button display-tooltip-when-elided="true" name="toolbar-button--add-block" class="toolbar-button">
             <ui:VisualElement name="icon-tool--add-block" class="tool-icon" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
         </ui:Button>
-        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--remove-block">
+        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--remove-block" class="toolbar-button">
             <ui:VisualElement name="icon-tool--remove-block" class="tool-icon" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
         </ui:Button>
-        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--select-block">
+        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--select-block" class="toolbar-button">
             <ui:VisualElement name="icon-tool--select-block" class="tool-icon" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
         </ui:Button>
-        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--select-face">
+        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--select-face" class="toolbar-button">
             <ui:VisualElement name="icon-tool--select-face" class="tool-icon" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
         </ui:Button>
-        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--paint-block">
+        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--paint-block" class="toolbar-button">
             <ui:VisualElement name="icon-tool--paint-block" class="tool-icon" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
         </ui:Button>
         <ui:Button display-tooltip-when-elided="true" name="toolbar-button--paint-face" class="toolbar-button">
             <ui:VisualElement name="icon-tool--paint-face" class="tool-icon" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
         </ui:Button>
-        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--vertex-height">
+        <ui:Button display-tooltip-when-elided="true" name="toolbar-button--vertex-height" class="toolbar-button">
             <ui:VisualElement name="icon-tool--vertex-height" class="tool-icon" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
         </ui:Button>
     </ui:VisualElement>

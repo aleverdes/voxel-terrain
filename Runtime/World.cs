@@ -19,6 +19,8 @@ namespace AffenCode.VoxelTerrain
         [HideInInspector] [SerializeField] private Block[] _blocks;
         [HideInInspector] [SerializeField] private Chunk[] _chunks;
 
+        [HideInInspector] public WorldTool LastWorldTool = WorldTool.None;
+        
         [ContextMenu("Setup")]
         public void Setup()
         {

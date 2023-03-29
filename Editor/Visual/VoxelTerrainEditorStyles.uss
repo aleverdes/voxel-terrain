@@ -8,7 +8,7 @@
 }
 
 .toolbar-button.pressed {
-    background-color: black;
+    background-color: cornflowerblue;
 }
 
 .tool-icon {
