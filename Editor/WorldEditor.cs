@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Rendering;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace AffenCode.VoxelTerrain
 {
@@ -23,6 +25,9 @@ namespace AffenCode.VoxelTerrain
         private Vector3Int _hoveredBlockPosition;
 
         private WorldTool _tool = WorldTool.None;
+
+        private VisualElement _rootVisualElement;
+        private VisualTreeAsset _visualTreeAsset;
         
         private GUIStyle _normalButtonGuiStyleLeft;
         private GUIStyle _activeButtonGuiStyleLeft;
@@ -49,6 +54,19 @@ namespace AffenCode.VoxelTerrain
         {
             EditorApplication.update += ForceRedrawSceneView;
             SceneView.duringSceneGui += OnScene;
+
+            _rootVisualElement = new VisualElement();
+            
+            var monoScript = MonoScript.FromScriptableObject(this);
+            var scriptPath = AssetDatabase.GetAssetPath(monoScript);
+            var folderPath = Path.GetDirectoryName(scriptPath);
+            
+            var templatePath = Path.Combine(folderPath, "Visual/VoxelTerrainEditorTemplate.uxml");
+            _visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(templatePath);
+
+            var stylesPath = Path.Combine(folderPath, "Visual/VoxelTerrainEditorStyles.uss");
+            var styles = AssetDatabase.LoadAssetAtPath<StyleSheet>(stylesPath);
+            _rootVisualElement.styleSheets.Add(styles);
         }
 
         public void OnDisable()
@@ -56,148 +74,22 @@ namespace AffenCode.VoxelTerrain
             EditorApplication.update -= ForceRedrawSceneView;
             SceneView.duringSceneGui -= OnScene;
         }
-        
-        public override void OnInspectorGUI()
+
+        public override VisualElement CreateInspectorGUI()
         {
-            base.OnInspectorGUI();
-            
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
+            _rootVisualElement.Clear();
 
-            if (GUILayout.Button("Reset"))
-            {
-                Target.Setup();    
-            }
-            
-            _editMode = EditorGUILayout.ToggleLeft("Edit Mode", _editMode);
-            Tools.hidden = _editMode;
+            _visualTreeAsset.CloneTree(_rootVisualElement);
 
-            if (_editMode)
-            {
-                EditorGUILayout.Space();
-                DrawEditMode();
-            }
-        }
-
-        private void DrawEditMode()
-        {
-            InspectorDrawTools();
-            switch (_tool)
-            {
-                case WorldTool.None:
-                    break;
-                case WorldTool.AddBlock:
-                    InspectorDrawAddBlockTool();
-                    break;
-                case WorldTool.RemoveBlock:
-                    InspectorDrawRemoveBlockTool();
-                    break;
-                case WorldTool.SelectBlock:
-                    InspectorDrawSelectBlockTool();
-                    break;
-                case WorldTool.SelectFace:
-                    InspectorDrawSelectFaceTool();
-                    break;
-                case WorldTool.PaintBlock:
-                    InspectorDrawPaintBlockTool();
-                    break;
-                case WorldTool.PaintFace:
-                    InspectorDrawPaintFaceTool();
-                    break;
-                case WorldTool.VertexHeight:
-                    InspectorDrawVertexHeightTool();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void InspectorDrawTools()
-        {
-            EditorGUILayout.BeginVertical();
+            _rootVisualElement.Q<Button>("toolbar-button--add-block").clicked += () => { _tool = WorldTool.AddBlock; Debug.LogError("Add block"); };
+            _rootVisualElement.Q<Button>("toolbar-button--remove-block").clicked += () => { _tool = WorldTool.RemoveBlock; Debug.LogError("Remove block"); };
+            _rootVisualElement.Q<Button>("toolbar-button--select-block").clicked += () => { _tool = WorldTool.SelectBlock; Debug.LogError("Select block"); };
+            _rootVisualElement.Q<Button>("toolbar-button--select-face").clicked += () => { _tool = WorldTool.SelectFace; Debug.LogError("Select face"); };
+            _rootVisualElement.Q<Button>("toolbar-button--paint-block").clicked += () => { _tool = WorldTool.PaintBlock; Debug.LogError("Paint block"); };
+            _rootVisualElement.Q<Button>("toolbar-button--paint-face").clicked += () => { _tool = WorldTool.PaintFace; Debug.LogError("Paint face"); };
+            _rootVisualElement.Q<Button>("toolbar-button--vertex-height").clicked += () => { _tool = WorldTool.VertexHeight; Debug.LogError("Vertex height"); };
             
-            EditorGUILayout.LabelField("Tools", EditorStyles.boldLabel);
-
-            EditorGUILayout.BeginHorizontal();
-            
-            if (GUILayout.Button("-", _tool == WorldTool.None ? _activeButtonGuiStyleLeft : _normalButtonGuiStyleLeft))
-            {
-                _tool = WorldTool.None;
-            }
-            if (GUILayout.Button("AB", _tool == WorldTool.AddBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
-            {
-                _tool = WorldTool.AddBlock;
-            }
-            if (GUILayout.Button("RB", _tool == WorldTool.RemoveBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
-            {
-                _tool = WorldTool.RemoveBlock;
-            }
-            if (GUILayout.Button("SB", _tool == WorldTool.SelectBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
-            {
-                _tool = WorldTool.SelectBlock;
-            }
-            if (GUILayout.Button("SF", _tool == WorldTool.SelectFace ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
-            {
-                _tool = WorldTool.SelectFace;
-            }
-            if (GUILayout.Button("PB", _tool == WorldTool.PaintBlock ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
-            {
-                _tool = WorldTool.PaintBlock;
-            }
-            if (GUILayout.Button("PF", _tool == WorldTool.PaintFace ? _activeButtonGuiStyleMid : _normalButtonGuiStyleMid))
-            {
-                _tool = WorldTool.PaintFace;
-            }
-            if (GUILayout.Button("VH", _tool == WorldTool.VertexHeight ? _activeButtonGuiStyleRight : _normalButtonGuiStyleRight))
-            {
-                _tool = WorldTool.VertexHeight;
-            }
-            
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.Space();
-            
-            EditorGUILayout.LabelField("Selected Tool", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField(_tool.ToString(), EditorStyles.label);
-            
-
-            EditorGUILayout.EndVertical();
-        }
-
-        private void InspectorDrawAddBlockTool()
-        {
-            
-        }
-
-        private void InspectorDrawRemoveBlockTool()
-        {
-            
-        }
-
-        private void InspectorDrawSelectBlockTool()
-        {
-            
-        }
-
-        private void InspectorDrawSelectFaceTool()
-        {
-            
-        }
-
-        private void InspectorDrawPaintBlockTool()
-        {
-            
-        }
-
-        private void InspectorDrawPaintFaceTool()
-        {
-            
-        }
-
-        private void InspectorDrawVertexHeightTool()
-        {
-            
+            return _rootVisualElement;
         }
 
         private void OnScene(SceneView sceneView)

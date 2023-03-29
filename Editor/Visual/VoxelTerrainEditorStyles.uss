@@ -1,0 +1,45 @@
+.toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.toolbar-button {
+}
+
+.toolbar-button.pressed {
+    background-color: black;
+}
+
+.tool-icon {
+    width: 20px;
+    height: 20px;
+}
+
+#icon-tool--add-block {
+    background-image: resource('Icon Tool AddBlock');
+}
+
+#icon-tool--remove-block {
+    background-image: resource('Icon Tool RemoveBlock');
+}
+
+#icon-tool--select-block {
+    background-image: resource('Icon Tool SelectBlock');
+}
+
+#icon-tool--select-face {
+    background-image: resource('Icon Tool SelectFace');
+}
+
+#icon-tool--paint-block {
+    background-image: resource('Icon Tool PaintBlock');
+}
+
+#icon-tool--paint-face {
+    background-image: resource('Icon Tool PaintFace');
+}
+
+#icon-tool--vertex-height {
+    background-image: resource('Icon Tool VertexHeight');
+}
