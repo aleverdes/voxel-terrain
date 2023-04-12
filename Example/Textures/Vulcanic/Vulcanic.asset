@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae332f14c6044be68214e6f96e3f48b4, type: 3}
+  m_Name: Vulcanic
+  m_EditorClassIdentifier: 
+  Textures:
+  - {fileID: 2800000, guid: 796917f3a1bbfb54d833129411c50339, type: 3}
+  - {fileID: 2800000, guid: 3236d8ce122c2c348b17b925b2372398, type: 3}
+  - {fileID: 2800000, guid: 9e138ac563feb49458756fd3bf3b19c6, type: 3}
+  - {fileID: 2800000, guid: e6c6d461fd97bea4cbea10b5160d8b56, type: 3}
+  - {fileID: 2800000, guid: a1959387d964a254cbc56d0660796b52, type: 3}
+  - {fileID: 2800000, guid: 523d2b4887d9e8547a43af256fd29d93, type: 3}
+  - {fileID: 2800000, guid: ef1764767fe5f5f48928b44f810d7a93, type: 3}
+  - {fileID: 2800000, guid: 1a5be13203fd3634aa498d068e99b9fe, type: 3}

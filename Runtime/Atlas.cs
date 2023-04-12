@@ -1,7 +1,5 @@
 using System.IO;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -22,6 +20,29 @@ namespace AffenCode.VoxelTerrain
         public AtlasLayerData[] AtlasLayers;
 
 #if UNITY_EDITOR
+        [ContextMenu("Find Atlas Layers")]
+        public void FindAtlasLayers()
+        {
+            var assetPath = AssetDatabase.GetAssetPath(this);
+
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                return;
+            }
+            
+            var folderPath = Path.GetDirectoryName(assetPath);
+            var textureGuids = AssetDatabase.FindAssets("t:AtlasLayer", new[] { folderPath });
+            
+            Layers = new AtlasLayer[textureGuids.Length];
+
+            for (var i = 0; i < textureGuids.Length; i++)
+            {
+                var atlasLayerGuidGuid = textureGuids[i];
+                var atlasLayer = AssetDatabase.LoadAssetAtPath<AtlasLayer>(AssetDatabase.GUIDToAssetPath(atlasLayerGuidGuid));
+                Layers[i] = atlasLayer;
+            }
+        }
+        
         [ContextMenu("Generate Texture Atlas")]
         public void GenerateTextureAtlas()
         {
@@ -48,7 +69,8 @@ namespace AffenCode.VoxelTerrain
                     var x = atlasTextureIndex % atlasTextureLength;
                     var y = Mathf.FloorToInt((float)atlasTextureIndex / atlasTextureLength);
 
-                    var pixels = texture.GetPixels(0, 0, texture.width, texture.height);
+                    var scaledTexture = TextureScaler.Scaled(texture, TextureSize, TextureSize);
+                    var pixels = texture.GetPixels(0, 0, scaledTexture.width, scaledTexture.height);
                     atlas.SetPixels(TextureSize * x, Size - TextureSize * (y + 1), TextureSize, TextureSize, pixels);
 
                     AtlasLayers[layerIndex].Textures[layerTextureIndex] = new AtlasTextureData()
