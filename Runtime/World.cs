@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace AffenCode.VoxelTerrain
+namespace AleVerDes.VoxelTerrain
 {
     [SelectionBase]
     [ExecuteInEditMode]
@@ -80,11 +79,11 @@ namespace AffenCode.VoxelTerrain
         private void SetupBlocks()
         {
             _blocks = new Block[WorldSize.x * WorldSize.y * WorldSize.z];
-            for (int x = 0; x < WorldSize.x; x++)
+            for (var x = 0; x < WorldSize.x; x++)
             {
-                for (int y = 0; y < WorldSize.y; y++)
+                for (var y = 0; y < WorldSize.y; y++)
                 {
-                    for (int z = 0; z < WorldSize.z; z++)
+                    for (var z = 0; z < WorldSize.z; z++)
                     {
                         ref var block = ref GetBlock(x, y, z);
                         block.Void = true;
@@ -132,11 +131,11 @@ namespace AffenCode.VoxelTerrain
             }
 
             var halfHeight = WorldSize.y / 2;
-            for (int x = 0; x < WorldSize.x; x++)
+            for (var x = 0; x < WorldSize.x; x++)
             {
-                for (int y = 0; y < halfHeight; y++)
+                for (var y = 0; y < halfHeight; y++)
                 {
-                    for (int z = 0; z < WorldSize.z; z++)
+                    for (var z = 0; z < WorldSize.z; z++)
                     {
                         ref var block = ref GetBlock(x, y, z);
                         block.Void = false;

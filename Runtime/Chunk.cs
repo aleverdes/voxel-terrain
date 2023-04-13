@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AffenCode.VoxelTerrain
+namespace AleVerDes.VoxelTerrain
 {
     public class Chunk : MonoBehaviour
     {

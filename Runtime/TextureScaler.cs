@@ -1,22 +1,21 @@
 using UnityEngine;
 
-namespace AffenCode.VoxelTerrain
+namespace AleVerDes.VoxelTerrain
 {
     public static class TextureScaler
     {
         /// <summary>
         ///     Returns a scaled copy of given texture.
         /// </summary>
-        /// <param name="tex">Source texure to scale</param>
+        /// <param name="src">Source texture to scale</param>
         /// <param name="width">Destination texture width</param>
         /// <param name="height">Destination texture height</param>
         /// <param name="mode">Filtering mode</param>
-        public static Texture2D Scaled(Texture2D src, int width, int height, FilterMode mode = FilterMode.Trilinear)
+        public static Texture2D Scale(Texture2D src, int width, int height, FilterMode mode = FilterMode.Trilinear)
         {
             Rect texR = new(0, 0, width, height);
-            _gpu_scale(src, width, height, mode);
- 
-            //Get rendered data back to a new texture
+            ScaleTexture(src, width, height, mode);
+
             Texture2D result = new(width, height, TextureFormat.ARGB32, true);
             result.Reinitialize(width, height);
             result.ReadPixels(texR, 0, 0, true);
@@ -30,35 +29,27 @@ namespace AffenCode.VoxelTerrain
         /// <param name="width">New width</param>
         /// <param name="height">New height</param>
         /// <param name="mode">Filtering mode</param>
-        public static void Scale(Texture2D tex, int width, int height, FilterMode mode = FilterMode.Trilinear)
+        public static void Rescale(this Texture2D tex, int width, int height, FilterMode mode = FilterMode.Trilinear)
         {
             Rect texR = new(0, 0, width, height);
-            _gpu_scale(tex, width, height, mode);
+            ScaleTexture(tex, width, height, mode);
  
-            // Update new texture
             tex.Reinitialize(width, height);
             tex.ReadPixels(texR, 0, 0, true);
-            tex.Apply(true); //Remove this if you hate us applying textures for you :)
+            tex.Apply(true);
         }
- 
-        // Internal unility that renders the source texture into the RTT - the scaling method itself.
-        private static void _gpu_scale(Texture2D src, int width, int height, FilterMode fmode)
+
+        private static void ScaleTexture(Texture2D src, int width, int height, FilterMode fmode)
         {
-            //We need the source texture in VRAM because we render with it
             src.filterMode = fmode;
             src.Apply(true);
- 
-            //Using RTT for best quality and performance. Thanks, Unity 5
+
             RenderTexture rtt = new(width, height, 32);
- 
-            //Set the RTT in order to render to it
+
             Graphics.SetRenderTarget(rtt);
- 
-            //Setup 2D matrix in range 0..1, so nobody needs to care about sized
+
             GL.LoadPixelMatrix(0, 1, 1, 0);
- 
-            //Then clear & draw the texture to fill the entire RTT.
-            GL.Clear(true, true, new Color(0, 0, 0, 0));
+            GL.Clear(true, true, Color.clear);
             Graphics.DrawTexture(new Rect(0, 0, 1, 1), src);
         }
     }

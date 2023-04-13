@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace AffenCode.VoxelTerrain
+namespace AleVerDes.VoxelTerrain
 {
     [CreateAssetMenu(fileName = "Atlas", menuName = "Voxel Terrain/Atlas", order = 0)]
     public class Atlas : ScriptableObject
@@ -69,7 +69,7 @@ namespace AffenCode.VoxelTerrain
                     var x = atlasTextureIndex % atlasTextureLength;
                     var y = Mathf.FloorToInt((float)atlasTextureIndex / atlasTextureLength);
 
-                    var scaledTexture = TextureScaler.Scaled(texture, TextureSize, TextureSize);
+                    var scaledTexture = TextureScaler.Scale(texture, TextureSize, TextureSize);
                     var pixels = texture.GetPixels(0, 0, scaledTexture.width, scaledTexture.height);
                     atlas.SetPixels(TextureSize * x, Size - TextureSize * (y + 1), TextureSize, TextureSize, pixels);
 

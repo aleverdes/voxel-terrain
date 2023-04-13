@@ -1,4 +1,4 @@
-namespace AffenCode.VoxelTerrain
+namespace AleVerDes.VoxelTerrain
 {
     public enum WorldTool
     {

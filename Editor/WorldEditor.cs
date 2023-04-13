@@ -1,15 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
-using UnityEditor.Rendering;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-namespace AffenCode.VoxelTerrain
+namespace AleVerDes.VoxelTerrain
 {
     [CustomEditor(typeof(World))]
     public class WorldEditor : Editor

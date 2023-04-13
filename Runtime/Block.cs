@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace AffenCode.VoxelTerrain
+namespace AleVerDes.VoxelTerrain
 {
     [Serializable]
     public struct Block
