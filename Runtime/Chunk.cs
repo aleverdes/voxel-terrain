@@ -338,7 +338,11 @@ namespace AleVerDes.VoxelTerrain
                     }
                 }
             }
-            
+
+            // TODO: Changed way to fix UV.y
+            for (int i = 0; i < uvs.Count; i++) 
+                uvs[i] -= new Vector2(0, Atlas.TextureSize / (float)Atlas.Size);
+
             _mesh.vertices = vertices.ToArray();
             _mesh.uv = uvs.ToArray();
             _mesh.tangents = tangents.ToArray();
