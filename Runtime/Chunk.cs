@@ -72,10 +72,10 @@ namespace AleVerDes.VoxelTerrain
 
                     vertices.AddRange(new []
                     {
-                        new Vector3(x, 0, z) * BlockSize,
-                        new Vector3(x, 0, z + 1) * BlockSize,
-                        new Vector3(x + 1, 0, z + 1) * BlockSize,
-                        new Vector3(x + 1, 0, z) * BlockSize,
+                        new Vector3(x, _world.GetVertexHeight(x, z), z) * BlockSize,
+                        new Vector3(x, _world.GetVertexHeight(x, z + 1), z + 1) * BlockSize,
+                        new Vector3(x + 1, _world.GetVertexHeight(x + 1, z + 1), z + 1) * BlockSize,
+                        new Vector3(x + 1, _world.GetVertexHeight(x + 1, z), z) * BlockSize,
                     });
                         
                     triangles.AddRange(new []

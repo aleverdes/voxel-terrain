@@ -555,26 +555,17 @@ namespace AleVerDes.VoxelTerrain
                 {
                     
                 }
-                
-                
-                // if (Tool == WorldTool.VertexHeight)
-                // {
-                //     var dt = 0.5f * modeShiftKey.ToSign() * _editorDeltaTime;
-                //     foreach (var (blockPosition, verticesExisting) in _blockTopVerticesExisting)
-                //     {
-                //         ref var block = ref Target.GetBlock(blockPosition);
-                //         if (verticesExisting.BackLeft)
-                //             block.TopVerticesHeights.BackLeft = Mathf.Clamp01(block.TopVerticesHeights.BackLeft + dt);
-                //         if (verticesExisting.BackRight)
-                //             block.TopVerticesHeights.BackRight = Mathf.Clamp01(block.TopVerticesHeights.BackRight + dt);
-                //         if (verticesExisting.ForwardLeft)
-                //             block.TopVerticesHeights.ForwardLeft = Mathf.Clamp01(block.TopVerticesHeights.ForwardLeft + dt);
-                //         if (verticesExisting.ForwardRight)
-                //             block.TopVerticesHeights.ForwardRight = Mathf.Clamp01(block.TopVerticesHeights.ForwardRight + dt);
-                //     }
-                //     Target.GenerateChunkMeshes(_blockTopVerticesExisting.Keys);
-                //     EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-                // }
+                else if (Tool == WorldTool.Height)
+                {
+                    var dt = 0.5f * (!modeShiftKey).ToSign() * _editorDeltaTime;
+                    foreach (var vertexIndex in _hoveredVertices)
+                    {
+                        ref var vertexHeight = ref Target.GetVertexHeight(vertexIndex);
+                        vertexHeight = Mathf.Clamp(vertexHeight + dt, 0, 10f);
+                    }
+                    Target.GenerateChunkMeshes(_hoveredVertices);
+                    EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+                }
             }
         }
 
