@@ -54,21 +54,9 @@ namespace AleVerDes.VoxelTerrain
             EditorApplication.update += ForceRedrawSceneView;
             EditorApplication.update += SetEditorDeltaTime;
             SceneView.duringSceneGui += OnScene;
-
-            _rootVisualElement = new VisualElement();
-            
-            var monoScript = MonoScript.FromScriptableObject(this);
-            var scriptPath = AssetDatabase.GetAssetPath(monoScript);
-            var folderPath = Path.GetDirectoryName(scriptPath);
-            
-            var templatePath = Path.Combine(folderPath, "Visual/VoxelTerrainEditorTemplate.uxml");
-            _visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(templatePath);
-
-            var stylesPath = Path.Combine(folderPath, "Visual/VoxelTerrainEditorStyles.uss");
-            var styles = AssetDatabase.LoadAssetAtPath<StyleSheet>(stylesPath);
-            _rootVisualElement.styleSheets.Add(styles);
             
             _heightChangingBrushSize = Target.WorldSettings.BlockSize;
+            _paintingBrushSize = Target.WorldSettings.BlockSize;
         }
 
         public void OnDisable()
@@ -526,7 +514,7 @@ namespace AleVerDes.VoxelTerrain
                     foreach (var vertexIndex in _hoveredVertices)
                     {
                         ref var vertexHeight = ref Target.GetVertexHeight(vertexIndex);
-                        vertexHeight = Mathf.Clamp(vertexHeight + dt, 0, 10f);
+                        vertexHeight = Mathf.Clamp(vertexHeight + dt, Target.WorldSettings.HeightLimits.x, Target.WorldSettings.HeightLimits.y);
                     }
                     Target.GenerateChunkMeshes(_hoveredVertices);
                     EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
