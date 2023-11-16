@@ -22,11 +22,11 @@ namespace AleVerDes.VoxelTerrain
         public MeshRenderer MeshRenderer => _meshRenderer;
         public MeshCollider MeshCollider => _meshCollider;
 
-        private Vector3Int WorldSize => _world.WorldSize;
-        private Vector2Int ChunkSize => _world.ChunkSize;
-        private float BlockSize => _world.BlockSize;
-        private Atlas Atlas => _world.WorldAtlas;
-        private Material Material => _world.WorldMaterial;
+        private Vector3Int WorldSize => _world.WorldSettings.WorldSize;
+        private Vector2Int ChunkSize => _world.WorldSettings.ChunkSize;
+        private float BlockSize => _world.WorldSettings.BlockSize;
+        private Atlas Atlas => _world.WorldSettings.WorldAtlas;
+        private Material Material => _world.WorldSettings.WorldMaterial;
         
         public void Setup(World world, Vector2Int chunkPosition)
         {
@@ -357,7 +357,7 @@ namespace AleVerDes.VoxelTerrain
                 _meshRenderer = _meshObject.AddComponent<MeshRenderer>();
             }
             
-            _meshRenderer.sharedMaterial = _world.WorldMaterial;
+            _meshRenderer.sharedMaterial = _world.WorldSettings.WorldMaterial;
             
             _meshCollider.sharedMesh = _mesh;
             _meshFilter.sharedMesh = _mesh;

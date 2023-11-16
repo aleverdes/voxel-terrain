@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AleVerDes.VoxelTerrain
 {
-    [CreateAssetMenu(menuName = "AleVerDes/Voxel Terrain/World Settings", fileName = "Voxel Terrain Settings")]
+    [CreateAssetMenu(menuName = "Voxel Terrain/Terrain Settings", fileName = "Voxel Terrain Settings")]
     public class WorldSettings : ScriptableObject
     {
         public Vector3Int WorldSize = new Vector3Int(64, 16, 64);

@@ -121,6 +121,11 @@ namespace AleVerDes.VoxelTerrain
                             LayerIndex = 0,
                             LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
+                        
+                        block.TopForwardRightVertexHeight = 1f;
+                        block.TopForwardLeftVertexHeight = 1f;
+                        block.TopBackRightVertexHeight = 1f;
+                        block.TopBackLeftVertexHeight = 1f;
                     }
                 }
             }
@@ -156,13 +161,15 @@ namespace AleVerDes.VoxelTerrain
         {
             try
             {
-                return ref _blocks[x + y * WorldSize.x + z * WorldSize.x * WorldSize.y];
+                return ref _blocks[x + y * _worldSettings.WorldSize.x + z * _worldSettings.WorldSize.x * _worldSettings.WorldSize.y];
             }
             catch (Exception e)
             { 
-                Debug.LogError($"Index out of bounds: x[{x}], y[{y}], z[{z}]; world ({WorldSize.x}, {WorldSize.y}, {WorldSize.z}); formula is {x + y * WorldSize.x + z * WorldSize.x * WorldSize.y} (max is {WorldSize.x * WorldSize.y * WorldSize.z})");
+                Debug.LogError($"Index out of bounds: x[{x}], y[{y}], z[{z}]; world ({_worldSettings.WorldSize.x}, {_worldSettings.WorldSize.y}, {_worldSettings.WorldSize.z}); formula is {x + y * _worldSettings.WorldSize.x + z * _worldSettings.WorldSize.x * _worldSettings.WorldSize.y} (max is {_worldSettings.WorldSize.x * _worldSettings.WorldSize.y * _worldSettings.WorldSize.z})");
                 throw;
             }
         }
+        
+        public WorldSettings WorldSettings => _worldSettings;
     }
 }

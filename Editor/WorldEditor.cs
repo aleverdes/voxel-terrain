@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -13,7 +14,8 @@ namespace AleVerDes.VoxelTerrain
     {
         private World Target => target as World;
 
-        private List<Vector3Int> _selectedBlocks = new();
+        private readonly List<Vector3Int> _selectedBlocks = new();
+        private readonly Dictionary<Vector3Int, TopVerticesExisting> _blockTopVerticesExisting = new();
 
         private static readonly Color SelectorColor = new Color(1, 0, 0, 0.66f);
         private static readonly Color SelectedBlockColor = new Color(1, 0, 0, 0.33f);
@@ -51,7 +53,7 @@ namespace AleVerDes.VoxelTerrain
             var styles = AssetDatabase.LoadAssetAtPath<StyleSheet>(stylesPath);
             _rootVisualElement.styleSheets.Add(styles);
             
-            _heightChangingBrushSize = Target.BlockSize;
+            _heightChangingBrushSize = Target.WorldSettings.BlockSize;
         }
 
         public void OnDisable()
@@ -169,6 +171,11 @@ namespace AleVerDes.VoxelTerrain
                 return;
             }
             
+            if (!Target.WorldSettings)
+            {
+                return;
+            }
+            
             Selection.activeGameObject = Target.gameObject;
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
@@ -212,21 +219,26 @@ namespace AleVerDes.VoxelTerrain
         {
             Handles.color = SelectorColor;
             
-            var cellPosition = _mouseWorldPosition;
+            _hoveredBlockPosition = GetHoveredBlockPosition(_mouseWorldPosition);
+
+            DrawBlockSelection(_hoveredBlockPosition);
+        }
+
+        private Vector3Int GetHoveredBlockPosition(Vector3 mouseWorldPosition)
+        {
+            var cellPosition = mouseWorldPosition;
             
-            cellPosition.x = _mouseWorldPosition.x / Target.BlockSize; 
-            cellPosition.y = _mouseWorldPosition.y / Target.BlockSize; 
-            cellPosition.z = _mouseWorldPosition.z / Target.BlockSize;
+            cellPosition.x = mouseWorldPosition.x / Target.WorldSettings.BlockSize; 
+            cellPosition.y = mouseWorldPosition.y / Target.WorldSettings.BlockSize; 
+            cellPosition.z = mouseWorldPosition.z / Target.WorldSettings.BlockSize;
 
             cellPosition += SceneView.lastActiveSceneView.camera.transform.forward * 0.001f;
 
-            cellPosition.x = Mathf.Clamp(cellPosition.x, 0, Target.WorldSize.x - 1);
-            cellPosition.y = Mathf.Clamp(cellPosition.y, 0, Target.WorldSize.y - 1);
-            cellPosition.z = Mathf.Clamp(cellPosition.z, 0, Target.WorldSize.z - 1);
+            cellPosition.x = Mathf.Clamp(cellPosition.x, 0, Target.WorldSettings.WorldSize.x - 1);
+            cellPosition.y = Mathf.Clamp(cellPosition.y, 0, Target.WorldSettings.WorldSize.y - 1);
+            cellPosition.z = Mathf.Clamp(cellPosition.z, 0, Target.WorldSettings.WorldSize.z - 1);
             
-            _hoveredBlockPosition = ToVector3Int(cellPosition);
-
-            DrawBlockSelection(_hoveredBlockPosition);
+            return ToVector3Int(cellPosition);
         }
 
         private void ProcessVertexHeight()
@@ -234,6 +246,119 @@ namespace AleVerDes.VoxelTerrain
             Handles.color = Color.red;
             Handles.DrawWireDisc(_mouseWorldPosition, Vector3.up, _heightChangingBrushSize, 3f);
             Handles.DrawWireDisc(_mouseWorldPosition, Vector3.up, 0.01f, 3f);
+            DrawHoveredVertices();
+        }
+        
+        private void DrawHoveredVertices()
+        {
+            _blockTopVerticesExisting.Clear();
+
+            var hoveredVertices = new HashSet<Vector3>();
+            var blocksToProcessing = new HashSet<Vector3Int>();
+            var processedBlocks = new HashSet<Vector3Int>();
+            
+            var hoveredBlock = GetHoveredBlockPosition(_mouseWorldPosition);
+            _blockTopVerticesExisting.Add(hoveredBlock, new TopVerticesExisting(){ ForwardRight = true, ForwardLeft = true, BackRight = true, BackLeft = true });
+            blocksToProcessing.Add(hoveredBlock);
+
+            bool anyVertexProcessed;
+            do
+            {
+                anyVertexProcessed = false;
+                var toAdd = new List<Vector3Int>();
+                foreach (var blockToProcessing in blocksToProcessing)
+                {
+                    var neighbours = GetNeighbours(blockToProcessing); 
+                
+                    foreach (var neighbour in neighbours)
+                    {
+                        if (!processedBlocks.Add(neighbour))
+                            continue;
+
+                        if (TryAddVertex(BlockVertexPosition.TopForwardRight))
+                            anyVertexProcessed = true;
+                        if (TryAddVertex(BlockVertexPosition.TopForwardLeft))
+                            anyVertexProcessed = true;
+                        if (TryAddVertex(BlockVertexPosition.TopBackRight))
+                            anyVertexProcessed = true;
+                        if (TryAddVertex(BlockVertexPosition.TopBackLeft))
+                            anyVertexProcessed = true;
+
+                        if (anyVertexProcessed)
+                            toAdd.AddRange(GetNeighbours(neighbour));
+                    
+                        bool TryAddVertex(BlockVertexPosition blockVertexPosition)
+                        {
+                            var topForwardRightVertexPosition = GetVertexWorldPosition(neighbour, blockVertexPosition);
+                            return Vector3.Distance(topForwardRightVertexPosition, _mouseWorldPosition) < _heightChangingBrushSize && hoveredVertices.Add(topForwardRightVertexPosition);
+                        }
+                    }
+                }
+
+                foreach (var vector3Int in toAdd)
+                {
+                    blocksToProcessing.Add(vector3Int);
+                }
+
+                Vector3Int[] GetNeighbours(Vector3Int blockToGettingNeighbours)
+                {
+                    return new[]
+                    {
+                        blockToGettingNeighbours + Vector3Int.left,
+                        blockToGettingNeighbours + Vector3Int.right,
+                        blockToGettingNeighbours + Vector3Int.forward,
+                        blockToGettingNeighbours + Vector3Int.back,
+                        blockToGettingNeighbours + Vector3Int.left + Vector3Int.forward,
+                        blockToGettingNeighbours + Vector3Int.right + Vector3Int.forward,
+                        blockToGettingNeighbours + Vector3Int.left + Vector3Int.back,
+                        blockToGettingNeighbours + Vector3Int.right + Vector3Int.back,
+                    };
+                }
+            } while (blocksToProcessing.Count > 0 && anyVertexProcessed);
+
+            var normal = SceneView.lastActiveSceneView.camera.transform.forward;
+            foreach (var vertex in hoveredVertices)
+            {
+                Handles.DrawSolidDisc(vertex, normal, 0.05f);
+            }
+        }
+
+        /// <summary>
+        /// Return vertex position in the world
+        /// </summary>
+        /// <param name="blockPosition">Block position in the world</param>
+        /// <param name="vertexPosition">Vertex position</param>
+        /// <returns>Vertex world position</returns>
+        private Vector3 GetVertexWorldPosition(Vector3Int blockPosition, BlockVertexPosition vertexPosition)
+        {
+            var block = Target.GetBlock(blockPosition + Vector3Int.up);
+            var blockWorldPosition = GetBlockWorldPosition(blockPosition);
+            var vertexLocalPosition = Vector3.zero;
+            var blockSize = Target.WorldSettings.BlockSize;
+            switch (vertexPosition)
+            {
+                case BlockVertexPosition.TopForwardRight:
+                    vertexLocalPosition += new Vector3(1, block.TopForwardRightVertexHeight, 1) * blockSize;
+                    break;
+                case BlockVertexPosition.TopForwardLeft:
+                    vertexLocalPosition += new Vector3(0, block.TopForwardLeftVertexHeight, 1) * blockSize;
+                    break;
+                case BlockVertexPosition.TopBackRight:
+                    vertexLocalPosition += new Vector3(1, block.TopBackRightVertexHeight, 0) * blockSize;
+                    break;
+                case BlockVertexPosition.TopBackLeft:
+                    vertexLocalPosition += new Vector3(0, block.TopBackLeftVertexHeight, 0) * blockSize;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(vertexPosition), vertexPosition, null);
+            }
+
+            return blockWorldPosition + vertexLocalPosition;
+        }
+
+        private Vector3 GetBlockWorldPosition(Vector3Int block)
+        {
+            return new Vector3(block.x, block.y, block.z) * Target.WorldSettings.BlockSize;
         }
 
         private void ProcessEvents()
@@ -254,13 +379,12 @@ namespace AleVerDes.VoxelTerrain
                     {
                         var menu = new GenericMenu();
 
-                        foreach (var layer in Target.WorldAtlas.Layers)
+                        foreach (var layer in Target.WorldSettings.WorldAtlas.Layers)
                         {
-
-                            menu.AddItem(new GUIContent("Set Layer/" + layer.name), false, GenericMenuSetLayer, 1);
+                            menu.AddItem(new GUIContent("Set Layer/" + layer.name), false, SetLayer, layer);
                         }
-                        menu.AddItem(new GUIContent("Set Height/Up"), false, GenericMenuSetLayer, 2);
-                        menu.AddItem(new GUIContent("Set Height/Down"), false, GenericMenuSetLayer, 2);
+                        menu.AddItem(new GUIContent("Set Height/Up"), false, UpHeight, 0);
+                        menu.AddItem(new GUIContent("Set Height/Down"), false, DownHeight, 0);
                         menu.ShowAsContext();
                     }
                     else
@@ -300,13 +424,13 @@ namespace AleVerDes.VoxelTerrain
                 {
                     if (Event.current.keyCode is KeyCode.RightBracket)
                     {
-                        _heightChangingBrushSize += 0.2f * Target.BlockSize;
-                        _heightChangingBrushSize = Mathf.Min(_heightChangingBrushSize, 0.5f * Mathf.Max(Target.ChunkSize.x, Target.ChunkSize.y));
+                        _heightChangingBrushSize += 0.2f * Target.WorldSettings.BlockSize;
+                        _heightChangingBrushSize = Mathf.Min(_heightChangingBrushSize, 0.5f * Mathf.Max(Target.WorldSettings.ChunkSize.x, Target.WorldSettings.ChunkSize.y));
                     }
                     else if (Event.current.keyCode is KeyCode.LeftBracket)
                     {
-                        _heightChangingBrushSize -= 0.2f * Target.BlockSize;
-                        _heightChangingBrushSize = Mathf.Max(_heightChangingBrushSize, 0.5f * Target.BlockSize);
+                        _heightChangingBrushSize -= 0.2f * Target.WorldSettings.BlockSize;
+                        _heightChangingBrushSize = Mathf.Max(_heightChangingBrushSize, 0.5f * Target.WorldSettings.BlockSize);
                     }
                 }
             }
@@ -317,17 +441,17 @@ namespace AleVerDes.VoxelTerrain
 
         private void DrawBlockSelection(Vector3Int blockPosition)
         {
-            if (blockPosition.x > Target.WorldSize.x - 1 || blockPosition.x < 0)
+            if (blockPosition.x > Target.WorldSettings.WorldSize.x - 1 || blockPosition.x < 0)
             {
                 return;
             }
 
-            if (blockPosition.y > Target.WorldSize.y - 1 || blockPosition.y < 0)
+            if (blockPosition.y > Target.WorldSettings.WorldSize.y - 1 || blockPosition.y < 0)
             {
                 return;
             }
 
-            if (blockPosition.z > Target.WorldSize.z - 1 || blockPosition.z < 0)
+            if (blockPosition.z > Target.WorldSettings.WorldSize.z - 1 || blockPosition.z < 0)
             {
                 return;
             }
@@ -339,7 +463,7 @@ namespace AleVerDes.VoxelTerrain
                 return;
             }
 
-            var t = Target.BlockSize;
+            var t = Target.WorldSettings.BlockSize;
             var position = (Vector3) blockPosition;
             position *= t;
 
@@ -347,8 +471,8 @@ namespace AleVerDes.VoxelTerrain
             
             face = block.Top;
             if (face.Draw 
-                && (block.Position.y < Target.WorldSize.y - 1 && Target.GetBlock(blockPosition.x, blockPosition.y + 1, blockPosition.z).Void
-                    || block.Position.y == Target.WorldSize.y - 1))
+                && (block.Position.y < Target.WorldSettings.WorldSize.y - 1 && Target.GetBlock(blockPosition.x, blockPosition.y + 1, blockPosition.z).Void
+                    || block.Position.y == Target.WorldSettings.WorldSize.y - 1))
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
@@ -377,8 +501,8 @@ namespace AleVerDes.VoxelTerrain
             
             face = block.Forward;
             if (face.Draw 
-                && (block.Position.z < Target.WorldSize.z - 1 && Target.GetBlock(blockPosition.x, blockPosition.y, blockPosition.z + 1).Void
-                    || block.Position.z == Target.WorldSize.z - 1))
+                && (block.Position.z < Target.WorldSettings.WorldSize.z - 1 && Target.GetBlock(blockPosition.x, blockPosition.y, blockPosition.z + 1).Void
+                    || block.Position.z == Target.WorldSettings.WorldSize.z - 1))
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
@@ -422,8 +546,8 @@ namespace AleVerDes.VoxelTerrain
             
             face = block.Right;
             if (face.Draw 
-                && (block.Position.x < Target.WorldSize.x - 1 && Target.GetBlock(blockPosition.x + 1, blockPosition.y, blockPosition.z).Void
-                    || block.Position.x == Target.WorldSize.x - 1))
+                && (block.Position.x < Target.WorldSettings.WorldSize.x - 1 && Target.GetBlock(blockPosition.x + 1, blockPosition.y, blockPosition.z).Void
+                    || block.Position.x == Target.WorldSettings.WorldSize.x - 1))
             {
                 Handles.DrawAAConvexPolygon(new[]
                 {
@@ -441,14 +565,30 @@ namespace AleVerDes.VoxelTerrain
             SceneView.RepaintAll();
         }
 
-        private void GenericMenuSetLayer(object userData)
+        private void SetLayer(object userData)
         {
             
+        }
+
+        private void UpHeight(object userData)
+        {
+        }
+
+        private void DownHeight(object userData)
+        {
         }
 
         private Vector3Int ToVector3Int(Vector3 vector3)
         {
             return new Vector3Int((int) vector3.x, (int) vector3.y, (int) vector3.z);
+        }
+
+        private struct TopVerticesExisting
+        {
+            public bool ForwardRight;
+            public bool ForwardLeft;
+            public bool BackRight;
+            public bool BackLeft;
         }
     }
 }
