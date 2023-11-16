@@ -36,10 +36,17 @@ namespace AleVerDes.VoxelTerrain
         private float _editorDeltaTime;
         private float _lastTimeSinceStartup;
         
+        private SerializedProperty _worldSettingsProperty;
+        
         private WorldTool Tool
         {
             get => Target.LastWorldTool;
             set => Target.LastWorldTool = value;
+        }
+
+        private void InitializeGUI()
+        {
+            _worldSettingsProperty ??= serializedObject.FindProperty("_worldSettings");
         }
         
         public void OnEnable()
@@ -71,89 +78,41 @@ namespace AleVerDes.VoxelTerrain
             SceneView.duringSceneGui -= OnScene;
         }
 
-        public override VisualElement CreateInspectorGUI()
+        public override void OnInspectorGUI()
         {
-            _rootVisualElement.Clear();
-
-            _visualTreeAsset.CloneTree(_rootVisualElement);
-
-            SetupToolbar();
+            InitializeGUI();
             
-            return _rootVisualElement;
-        }
-
-        private void SetupToolbar()
-        {
-            _toolbarButton = new Dictionary<WorldTool, Button>()
-            { 
-                { WorldTool.Selection, _rootVisualElement.Q<Button>("toolbar-button--selection") },
-                { WorldTool.Painting, _rootVisualElement.Q<Button>("toolbar-button--painting") },
-                { WorldTool.Height, _rootVisualElement.Q<Button>("toolbar-button--height") },
-                { WorldTool.CellRestoring, _rootVisualElement.Q<Button>("toolbar-button--restoring") },
-                { WorldTool.CellDeleting, _rootVisualElement.Q<Button>("toolbar-button--deleting") },
-            };
+            EditorGUILayout.PropertyField(_worldSettingsProperty);
             
-            _toolbarButton[WorldTool.Selection].RegisterCallback<ClickEvent>(SetSelectionTool);
-            _toolbarButton[WorldTool.Painting].RegisterCallback<ClickEvent>(SetPaintingTool);
-            _toolbarButton[WorldTool.Height].RegisterCallback<ClickEvent>(SetHeightTool);
-            _toolbarButton[WorldTool.CellRestoring].RegisterCallback<ClickEvent>(SetCellRestoringTool);
-            _toolbarButton[WorldTool.CellDeleting].RegisterCallback<ClickEvent>(SetCellDeletingTool);
-            
-            UpdateToolbar();
-        }
+            EditorGUILayout.BeginHorizontal();
 
-        private void SetCellRestoringTool(ClickEvent clickEvent)
-        {
-            SetTool(WorldTool.CellRestoring);
-        }
+            if (GUILayout.Button("-")) 
+                SetTool(WorldTool.None);
 
-        private void SetCellDeletingTool(ClickEvent clickEvent)
-        {
-            SetTool(WorldTool.CellDeleting);
-        }
+            if (GUILayout.Button("S")) 
+                SetTool(WorldTool.Selection);
 
-        private void SetHeightTool(ClickEvent clickEvent)
-        {
-            SetTool(WorldTool.Height);
-        }
+            if (GUILayout.Button("P")) 
+                SetTool(WorldTool.Painting);
 
-        private void SetSelectionTool(ClickEvent clickEvent)
-        {
-            SetTool(WorldTool.Selection);
-        }
+            if (GUILayout.Button("H")) 
+                SetTool(WorldTool.Height);
 
-        private void SetPaintingTool(ClickEvent clickEvent)
-        {
-            SetTool(WorldTool.Painting);
+            if (GUILayout.Button("x")) 
+                SetTool(WorldTool.CellDeleting);
+
+            if (GUILayout.Button("+")) 
+                SetTool(WorldTool.CellRestoring);
+
+            EditorGUILayout.EndHorizontal();
         }
 
         private void SetTool(WorldTool tool)
         {
             Tool = tool;
-            UpdateInspector();
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
         }
 
-        private void UpdateInspector()
-        {
-            UpdateToolbar();
-        }
-
-        private void UpdateToolbar()
-        {
-            foreach (var (worldTool, toolbarButton) in _toolbarButton)
-            {
-                if (worldTool == Tool)
-                {
-                    toolbarButton.AddToClassList("pressed");
-                }
-                else
-                {
-                    toolbarButton.RemoveFromClassList("pressed");
-                }
-            }
-        }
-        
         private void OnScene(SceneView sceneView)
         {
             if (Tool == WorldTool.None)
@@ -290,6 +249,8 @@ namespace AleVerDes.VoxelTerrain
             var neighbours = VoxelTerrainUtils.GetNeighbours(hoveredCellPosition);
             toProcess.AddRange(neighbours);
 
+            worldPosition.y = 0;
+            
             var processing = false;
             do
             {
@@ -307,28 +268,32 @@ namespace AleVerDes.VoxelTerrain
 
                     var continueProcessing = false;
                     var backLeftVertex = GetVertexWorldPosition(processingCell);
-                    if (Vector3.Distance(new Vector3(worldPosition.x, 0f, worldPosition.z), backLeftVertex) <= radius)
+                    backLeftVertex.y = 0;
+                    if (Vector3.Distance(worldPosition, backLeftVertex) <= radius)
                     {
                         hoveredVertices.Add(processingCell);
                         continueProcessing = true;
                     }
 
                     var backRightVertex = GetVertexWorldPosition(processingCell + Vector2Int.right);
-                    if (Vector3.Distance(new Vector3(worldPosition.x, 0f, worldPosition.z), backRightVertex) <= radius)
+                    backRightVertex.y = 0;
+                    if (Vector3.Distance(worldPosition, backRightVertex) <= radius)
                     {
                         hoveredVertices.Add(processingCell + Vector2Int.right);
                         continueProcessing = true;
                     }
                     
                     var forwardLeftVertex = GetVertexWorldPosition(processingCell + Vector2Int.up);
-                    if (Vector3.Distance(new Vector3(worldPosition.x, 0f, worldPosition.z), forwardLeftVertex) <= radius)
+                    forwardLeftVertex.y = 0;
+                    if (Vector3.Distance(worldPosition, forwardLeftVertex) <= radius)
                     {
                         hoveredVertices.Add(processingCell + Vector2Int.up);
                         continueProcessing = true;
                     }
                     
                     var forwardRightVertex = GetVertexWorldPosition(processingCell + Vector2Int.one);
-                    if (Vector3.Distance(new Vector3(worldPosition.x, 0f, worldPosition.z), forwardRightVertex) <= radius)
+                    forwardRightVertex.y = 0;
+                    if (Vector3.Distance(worldPosition, forwardRightVertex) <= radius)
                     {
                         hoveredVertices.Add(processingCell + Vector2Int.one);
                         continueProcessing = true;
@@ -405,11 +370,11 @@ namespace AleVerDes.VoxelTerrain
 
             Handles.DrawAAPolyLine(new[]
             {
-                position.ToX0Z() + new Vector3(t, 0, t),
-                position.ToX0Z() + new Vector3(0, 0, t),
-                position.ToX0Z() + new Vector3(0, 0, 0),
-                position.ToX0Z() + new Vector3(t, 0, 0),
-                position.ToX0Z() + new Vector3(t, 0, t)
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.one)) + new Vector3(t, 0, t),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.up)) + new Vector3(0, 0, t),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.zero)) + new Vector3(0, 0, 0),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.right)) + new Vector3(t, 0, 0),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.one)) + new Vector3(t, 0, t)
             });
         }
 
@@ -427,22 +392,22 @@ namespace AleVerDes.VoxelTerrain
 
             Handles.DrawAAConvexPolygon(new[]
             {
-                position.ToX0Z() + new Vector3(t, 0, t),
-                position.ToX0Z() + new Vector3(0, 0, t),
-                position.ToX0Z() + new Vector3(0, 0, 0),
-                position.ToX0Z() + new Vector3(t, 0, 0),
-                position.ToX0Z() + new Vector3(t, 0, t)
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.one)) + new Vector3(t, 0, t),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.up)) + new Vector3(0, 0, t),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.zero)) + new Vector3(0, 0, 0),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.right)) + new Vector3(t, 0, 0),
+                position.ToX0Z().WithY(Target.GetVertexHeight(cellPosition + Vector2Int.one)) + new Vector3(t, 0, t)
             });
         }
-
+        
         private Vector3 GetVertexWorldPosition(Vector2Int vertex)
         {
-            return (new Vector2(vertex.x, vertex.y) * Target.WorldSettings.BlockSize).ToX0Z();
+            return new Vector3(vertex.x, Target.GetVertexHeight(vertex), vertex.y) * Target.WorldSettings.BlockSize;
         }
 
         private Vector3 GetCellWorldPosition(Vector2Int block)
         {
-            return (new Vector2(block.x, block.y) * Target.WorldSettings.BlockSize).ToX0Z();
+            return new Vector3(block.x, 0, block.y) * Target.WorldSettings.BlockSize;
         }
 
         private void ProcessEvents()
