@@ -21,6 +21,8 @@ namespace AleVerDes.VoxelTerrain
         public MeshFilter MeshFilter => _meshFilter;
         public MeshRenderer MeshRenderer => _meshRenderer;
         public MeshCollider MeshCollider => _meshCollider;
+        
+        public RectInt Rect => new RectInt(_chunkPosition, _world.WorldSettings.ChunkSize);
 
         private Vector3Int WorldSize => _world.WorldSettings.WorldSize;
         private Vector2Int ChunkSize => _world.WorldSettings.ChunkSize;

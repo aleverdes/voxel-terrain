@@ -30,6 +30,11 @@ namespace AleVerDes.VoxelTerrain
         
         private float _heightChangingBrushSize = 0.5f;
 
+        private bool _leftMouseButtonIsPressed;
+
+        private float _editorDeltaTime;
+        private float _lastTimeSinceStartup;
+        
         private WorldTool Tool
         {
             get => Target.LastWorldTool;
@@ -39,6 +44,7 @@ namespace AleVerDes.VoxelTerrain
         public void OnEnable()
         {
             EditorApplication.update += ForceRedrawSceneView;
+            EditorApplication.update += SetEditorDeltaTime;
             SceneView.duringSceneGui += OnScene;
 
             _rootVisualElement = new VisualElement();
@@ -60,6 +66,7 @@ namespace AleVerDes.VoxelTerrain
         public void OnDisable()
         {
             EditorApplication.update -= ForceRedrawSceneView;
+            EditorApplication.update -= SetEditorDeltaTime;
             SceneView.duringSceneGui -= OnScene;
         }
 
@@ -269,7 +276,7 @@ namespace AleVerDes.VoxelTerrain
                 foreach (var blockToProcessing in blocksToProcessing)
                 {
                     CheckBlock(blockToProcessing);
-                    var neighbours = GetNeighbours(blockToProcessing);
+                    var neighbours = VoxelTerrainUtils.GetNeighbours(blockToProcessing);
                     foreach (var neighbour in neighbours)
                     {
                         CheckBlock(neighbour);
@@ -321,7 +328,7 @@ namespace AleVerDes.VoxelTerrain
                         _blockTopVerticesExisting.Add(blockToCheck, vertices);
 
                         if (anyVertexProcessed)
-                            toAdd.AddRange(GetNeighbours(blockToCheck));
+                            toAdd.AddRange(VoxelTerrainUtils.GetNeighbours(blockToCheck));
                     
                         bool TryAddVertex(BlockVertexPosition blockVertexPosition)
                         {
@@ -337,21 +344,6 @@ namespace AleVerDes.VoxelTerrain
                 foreach (var vector3Int in toAdd)
                 {
                     blocksToProcessing.Add(vector3Int);
-                }
-
-                Vector3Int[] GetNeighbours(Vector3Int blockToGettingNeighbours)
-                {
-                    return new[]
-                    {
-                        blockToGettingNeighbours + Vector3Int.left,
-                        blockToGettingNeighbours + Vector3Int.right,
-                        blockToGettingNeighbours + Vector3Int.forward,
-                        blockToGettingNeighbours + Vector3Int.back,
-                        blockToGettingNeighbours + Vector3Int.left + Vector3Int.forward,
-                        blockToGettingNeighbours + Vector3Int.right + Vector3Int.forward,
-                        blockToGettingNeighbours + Vector3Int.left + Vector3Int.back,
-                        blockToGettingNeighbours + Vector3Int.right + Vector3Int.back,
-                    };
                 }
             } while (blocksToProcessing.Count > 0 && anyVertexProcessed);
 
@@ -414,6 +406,8 @@ namespace AleVerDes.VoxelTerrain
             {
                 if (Event.current.button == 0)
                 {
+                    _leftMouseButtonIsPressed = true;
+                    
                     if (modeControlKey)
                     {
                         var menu = new GenericMenu();
@@ -447,32 +441,28 @@ namespace AleVerDes.VoxelTerrain
                                 _selectedBlocks.Add(_hoveredBlockPosition);
                             }
                         }
+                        else if (Tool == WorldTool.AddBlock)
+                        {
+                            ref var block = ref Target.GetBlock(_hoveredBlockPosition + Vector3Int.up);
+                            block.Void = false;
+                            Target.GenerateChunkMeshes(new Vector3Int[] {_hoveredBlockPosition + Vector3Int.up});;
+                            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+                        }
                         else if (Tool == WorldTool.RemoveBlock)
                         {
                             ref var block = ref Target.GetBlock(_hoveredBlockPosition);
                             block.Void = true;
-                            Target.GenerateChunkMeshes();
-                            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-                        }
-                        else if (Tool == WorldTool.VertexHeight)
-                        {
-                            var dt = 0.1f * modeShiftKey.ToSign();
-                            foreach (var (blockPosition, verticesExisting) in _blockTopVerticesExisting)
-                            {
-                                ref var block = ref Target.GetBlock(blockPosition);
-                                if (verticesExisting.BackLeft)
-                                    block.TopVerticesHeights.BackLeft = Mathf.Clamp01(block.TopVerticesHeights.BackLeft + dt);
-                                if (verticesExisting.BackRight)
-                                    block.TopVerticesHeights.BackRight = Mathf.Clamp01(block.TopVerticesHeights.BackRight + dt);
-                                if (verticesExisting.ForwardLeft)
-                                    block.TopVerticesHeights.ForwardLeft = Mathf.Clamp01(block.TopVerticesHeights.ForwardLeft + dt);
-                                if (verticesExisting.ForwardRight)
-                                    block.TopVerticesHeights.ForwardRight = Mathf.Clamp01(block.TopVerticesHeights.ForwardRight + dt);
-                            }
-                            Target.GenerateChunkMeshes();
+                            Target.GenerateChunkMeshes(new Vector3Int[] {_hoveredBlockPosition});;
                             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
                         }
                     }
+                }
+            }
+            else if (Event.current.type == EventType.MouseUp)
+            {
+                if (Event.current.button == 0)
+                {
+                    _leftMouseButtonIsPressed = false;
                 }
             }
             else if (Event.current.isKey && Event.current.type == EventType.KeyDown)
@@ -493,6 +483,28 @@ namespace AleVerDes.VoxelTerrain
             }
             else if (Event.current.type == EventType.KeyUp)
             {
+            }
+
+            if (_leftMouseButtonIsPressed)
+            {
+                if (Tool == WorldTool.VertexHeight)
+                {
+                    var dt = 0.5f * modeShiftKey.ToSign() * _editorDeltaTime;
+                    foreach (var (blockPosition, verticesExisting) in _blockTopVerticesExisting)
+                    {
+                        ref var block = ref Target.GetBlock(blockPosition);
+                        if (verticesExisting.BackLeft)
+                            block.TopVerticesHeights.BackLeft = Mathf.Clamp01(block.TopVerticesHeights.BackLeft + dt);
+                        if (verticesExisting.BackRight)
+                            block.TopVerticesHeights.BackRight = Mathf.Clamp01(block.TopVerticesHeights.BackRight + dt);
+                        if (verticesExisting.ForwardLeft)
+                            block.TopVerticesHeights.ForwardLeft = Mathf.Clamp01(block.TopVerticesHeights.ForwardLeft + dt);
+                        if (verticesExisting.ForwardRight)
+                            block.TopVerticesHeights.ForwardRight = Mathf.Clamp01(block.TopVerticesHeights.ForwardRight + dt);
+                    }
+                    Target.GenerateChunkMeshes(_blockTopVerticesExisting.Keys);
+                    EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+                }
             }
         }
 
@@ -638,6 +650,14 @@ namespace AleVerDes.VoxelTerrain
         private Vector3Int ToVector3Int(Vector3 vector3)
         {
             return new Vector3Int((int) vector3.x, (int) vector3.y, (int) vector3.z);
+        }
+        
+        private void SetEditorDeltaTime()
+        {
+            if (_lastTimeSinceStartup == 0f) 
+                _lastTimeSinceStartup = (float)EditorApplication.timeSinceStartup;
+            _editorDeltaTime = (float) EditorApplication.timeSinceStartup - _lastTimeSinceStartup;
+            _lastTimeSinceStartup = (float) EditorApplication.timeSinceStartup;
         }
 
         private struct TopVerticesExisting

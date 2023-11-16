@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -149,10 +150,39 @@ namespace AleVerDes.VoxelTerrain
 
         public void GenerateChunkMeshes()
         {
-            foreach (var chunk in _chunks)
-            {
+            foreach (var chunk in _chunks) 
                 chunk.GenerateMesh();
+        }
+
+        public void GenerateChunkMeshes(IEnumerable<Vector3Int> affectedBlockPositions)
+        {
+            var blocks = new HashSet<Vector3Int>();
+            foreach (var affectedBlockPosition in affectedBlockPositions)
+            {
+                blocks.Add(affectedBlockPosition);
+                foreach (var neighbour in VoxelTerrainUtils.GetNeighbours(affectedBlockPosition)) 
+                    blocks.Add(neighbour);
             }
+
+            var affectedChunks = new HashSet<Chunk>();
+            foreach (var affectedBlockPosition in blocks)
+            {
+                var chunk = GetChunk(affectedBlockPosition);
+                if (chunk) 
+                    affectedChunks.Add(chunk);
+            }
+
+            foreach (var affectedChunk in affectedChunks) 
+                affectedChunk.GenerateMesh();
+        }
+        
+        public Chunk GetChunk(Vector3Int position)
+        {
+            foreach (var chunk in _chunks)
+                if (chunk.Rect.Contains(new Vector2Int(position.x, position.z)))
+                    return chunk;
+
+            return null;
         }
 
         public ref Block GetBlock(Vector3Int position)

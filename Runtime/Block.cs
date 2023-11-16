@@ -40,6 +40,7 @@ namespace AleVerDes.VoxelTerrain
         public Vector3 BottomBackLeft;
     }
 
+    [Serializable]
     public struct BlockTopVerticesHeights
     {
         public float ForwardRight;
