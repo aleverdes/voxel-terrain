@@ -17,10 +17,7 @@ namespace AleVerDes.VoxelTerrain
         public BlockFace Forward;
         public BlockFace Back;
 
-        public float TopForwardRightVertexHeight;
-        public float TopForwardLeftVertexHeight;
-        public float TopBackRightVertexHeight;
-        public float TopBackLeftVertexHeight;
+        public BlockTopVerticesHeights TopVerticesHeights;
     }
 
     [Serializable]
@@ -29,6 +26,26 @@ namespace AleVerDes.VoxelTerrain
         public bool Draw;
         public byte LayerIndex;
         public byte LayerTextureIndex;
+    }
+    
+    public struct BlockVertices
+    {
+        public Vector3 TopForwardRight;
+        public Vector3 TopForwardLeft;
+        public Vector3 TopBackRight;
+        public Vector3 TopBackLeft;
+        public Vector3 BottomForwardRight;
+        public Vector3 BottomForwardLeft;
+        public Vector3 BottomBackRight;
+        public Vector3 BottomBackLeft;
+    }
+
+    public struct BlockTopVerticesHeights
+    {
+        public float ForwardRight;
+        public float ForwardLeft;
+        public float BackRight;
+        public float BackLeft;
     }
     
     public static class BlockExtensions

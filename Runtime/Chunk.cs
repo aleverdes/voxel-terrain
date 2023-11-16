@@ -83,6 +83,8 @@ namespace AleVerDes.VoxelTerrain
                         }
 
                         var face = default(BlockFace);
+                        
+                        var yh = block.TopVerticesHeights;
 
                         face = block.Left;
                         if (face.Draw && (block.Position.x > 0 && _world.GetBlock(x - 1, y, z).Void || block.Position.x == 0))
@@ -91,8 +93,8 @@ namespace AleVerDes.VoxelTerrain
                             {
                                 new Vector3(x, y, z) * BlockSize,
                                 new Vector3(x, y, z + 1) * BlockSize,
-                                new Vector3(x, y + 1, z + 1) * BlockSize,
-                                new Vector3(x, y + 1, z) * BlockSize,
+                                new Vector3(x, y + yh.ForwardLeft, z + 1) * BlockSize,
+                                new Vector3(x, y + yh.BackLeft, z) * BlockSize,
                             });
                             
                             triangles.AddRange(new []
@@ -132,8 +134,8 @@ namespace AleVerDes.VoxelTerrain
                             {
                                 new Vector3(x + 1, y, z + 1) * BlockSize,
                                 new Vector3(x + 1, y, z) * BlockSize,
-                                new Vector3(x + 1, y + 1, z) * BlockSize,
-                                new Vector3(x + 1, y + 1, z + 1) * BlockSize,
+                                new Vector3(x + 1, y + yh.BackRight, z) * BlockSize,
+                                new Vector3(x + 1, y + yh.ForwardRight, z + 1) * BlockSize,
                             });
                             
                             triangles.AddRange(new []
@@ -171,10 +173,10 @@ namespace AleVerDes.VoxelTerrain
                         {
                             vertices.AddRange(new []
                             {
-                                new Vector3(x, y + 1, z) * BlockSize,
-                                new Vector3(x, y + 1, z + 1) * BlockSize,
-                                new Vector3(x + 1, y + 1, z + 1) * BlockSize,
-                                new Vector3(x + 1, y + 1, z) * BlockSize,
+                                new Vector3(x, y + yh.BackLeft, z) * BlockSize,
+                                new Vector3(x, y + yh.ForwardLeft, z + 1) * BlockSize,
+                                new Vector3(x + 1, y + yh.ForwardRight, z + 1) * BlockSize,
+                                new Vector3(x + 1, y + yh.BackRight, z) * BlockSize,
                             });
                             
                             triangles.AddRange(new []
@@ -255,8 +257,8 @@ namespace AleVerDes.VoxelTerrain
                             {
                                 new Vector3(x + 1, y, z) * BlockSize,
                                 new Vector3(x, y, z) * BlockSize,
-                                new Vector3(x, y + 1, z) * BlockSize,
-                                new Vector3(x + 1, y + 1, z) * BlockSize,
+                                new Vector3(x, y + yh.BackLeft, z) * BlockSize,
+                                new Vector3(x + 1, y + yh.BackRight, z) * BlockSize,
                             });
                             
                             triangles.AddRange(new []
@@ -296,8 +298,8 @@ namespace AleVerDes.VoxelTerrain
                             {
                                 new Vector3(x, y, z + 1) * BlockSize,
                                 new Vector3(x + 1, y, z + 1) * BlockSize,
-                                new Vector3(x + 1, y + 1, z + 1) * BlockSize,
-                                new Vector3(x, y + 1, z + 1) * BlockSize,
+                                new Vector3(x + 1, y + yh.ForwardRight, z + 1) * BlockSize,
+                                new Vector3(x, y + yh.ForwardLeft, z + 1) * BlockSize,
                             });
                             
                             triangles.AddRange(new []

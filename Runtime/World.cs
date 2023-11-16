@@ -122,10 +122,13 @@ namespace AleVerDes.VoxelTerrain
                             LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
                         
-                        block.TopForwardRightVertexHeight = 1f;
-                        block.TopForwardLeftVertexHeight = 1f;
-                        block.TopBackRightVertexHeight = 1f;
-                        block.TopBackLeftVertexHeight = 1f;
+                        block.TopVerticesHeights = new BlockTopVerticesHeights
+                        {
+                            ForwardRight = 1,
+                            ForwardLeft = 1,
+                            BackRight = 1,
+                            BackLeft = 1
+                        };
                     }
                 }
             }

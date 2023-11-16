@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using AleVerDes.UnityUtils;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -258,7 +259,6 @@ namespace AleVerDes.VoxelTerrain
             var processedBlocks = new HashSet<Vector3Int>();
             
             var hoveredBlock = GetHoveredBlockPosition(_mouseWorldPosition);
-            _blockTopVerticesExisting.Add(hoveredBlock, new TopVerticesExisting(){ ForwardRight = true, ForwardLeft = true, BackRight = true, BackLeft = true });
             blocksToProcessing.Add(hoveredBlock);
 
             bool anyVertexProcessed;
@@ -268,29 +268,68 @@ namespace AleVerDes.VoxelTerrain
                 var toAdd = new List<Vector3Int>();
                 foreach (var blockToProcessing in blocksToProcessing)
                 {
-                    var neighbours = GetNeighbours(blockToProcessing); 
-                
+                    CheckBlock(blockToProcessing);
+                    var neighbours = GetNeighbours(blockToProcessing);
                     foreach (var neighbour in neighbours)
                     {
-                        if (!processedBlocks.Add(neighbour))
-                            continue;
+                        CheckBlock(neighbour);
+                    }
 
+                    void CheckBlock(Vector3Int blockToCheck)
+                    {
+                        if (blockToCheck.x < 0 || blockToCheck.y < 0 || blockToCheck.z < 0)
+                        {
+                            processedBlocks.Add(blockToCheck);
+                            return;
+                        }
+
+                        if (blockToCheck.x > Target.WorldSettings.WorldSize.x - 1 || blockToCheck.y > Target.WorldSettings.WorldSize.y - 1 || blockToCheck.z > Target.WorldSettings.WorldSize.z - 1)
+                        {
+                            processedBlocks.Add(blockToCheck);
+                            return;
+                        }
+
+                        if (!processedBlocks.Add(blockToCheck))
+                            return;
+
+                        var vertices = new TopVerticesExisting();
+                        
                         if (TryAddVertex(BlockVertexPosition.TopForwardRight))
+                        {
+                            vertices.ForwardRight = true;
                             anyVertexProcessed = true;
+                        }
+
                         if (TryAddVertex(BlockVertexPosition.TopForwardLeft))
+                        {
+                            vertices.ForwardLeft = true;
                             anyVertexProcessed = true;
+                        }
+
                         if (TryAddVertex(BlockVertexPosition.TopBackRight))
+                        {
+                            vertices.BackRight = true;
                             anyVertexProcessed = true;
+                        }
+
                         if (TryAddVertex(BlockVertexPosition.TopBackLeft))
+                        {
+                            vertices.BackLeft = true;
                             anyVertexProcessed = true;
+                        }
+                        
+                        _blockTopVerticesExisting.Add(blockToCheck, vertices);
 
                         if (anyVertexProcessed)
-                            toAdd.AddRange(GetNeighbours(neighbour));
+                            toAdd.AddRange(GetNeighbours(blockToCheck));
                     
                         bool TryAddVertex(BlockVertexPosition blockVertexPosition)
                         {
-                            var topForwardRightVertexPosition = GetVertexWorldPosition(neighbour, blockVertexPosition);
-                            return Vector3.Distance(topForwardRightVertexPosition, _mouseWorldPosition) < _heightChangingBrushSize && hoveredVertices.Add(topForwardRightVertexPosition);
+                            var vertexWorldPosition = GetVertexWorldPosition(blockToCheck, blockVertexPosition);
+                            var distance = Vector3.Distance(vertexWorldPosition, _mouseWorldPosition) < _heightChangingBrushSize;
+                            if (distance)
+                                hoveredVertices.Add(vertexWorldPosition);
+                            return distance;
                         }
                     }
                 }
@@ -338,16 +377,16 @@ namespace AleVerDes.VoxelTerrain
             switch (vertexPosition)
             {
                 case BlockVertexPosition.TopForwardRight:
-                    vertexLocalPosition += new Vector3(1, block.TopForwardRightVertexHeight, 1) * blockSize;
+                    vertexLocalPosition += new Vector3(1, block.TopVerticesHeights.ForwardRight, 1) * blockSize;
                     break;
                 case BlockVertexPosition.TopForwardLeft:
-                    vertexLocalPosition += new Vector3(0, block.TopForwardLeftVertexHeight, 1) * blockSize;
+                    vertexLocalPosition += new Vector3(0, block.TopVerticesHeights.ForwardLeft, 1) * blockSize;
                     break;
                 case BlockVertexPosition.TopBackRight:
-                    vertexLocalPosition += new Vector3(1, block.TopBackRightVertexHeight, 0) * blockSize;
+                    vertexLocalPosition += new Vector3(1, block.TopVerticesHeights.BackRight, 0) * blockSize;
                     break;
                 case BlockVertexPosition.TopBackLeft:
-                    vertexLocalPosition += new Vector3(0, block.TopBackLeftVertexHeight, 0) * blockSize;
+                    vertexLocalPosition += new Vector3(0, block.TopVerticesHeights.BackLeft, 0) * blockSize;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(vertexPosition), vertexPosition, null);
@@ -412,6 +451,24 @@ namespace AleVerDes.VoxelTerrain
                         {
                             ref var block = ref Target.GetBlock(_hoveredBlockPosition);
                             block.Void = true;
+                            Target.GenerateChunkMeshes();
+                            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+                        }
+                        else if (Tool == WorldTool.VertexHeight)
+                        {
+                            var dt = 0.1f * modeShiftKey.ToSign();
+                            foreach (var (blockPosition, verticesExisting) in _blockTopVerticesExisting)
+                            {
+                                ref var block = ref Target.GetBlock(blockPosition);
+                                if (verticesExisting.BackLeft)
+                                    block.TopVerticesHeights.BackLeft = Mathf.Clamp01(block.TopVerticesHeights.BackLeft + dt);
+                                if (verticesExisting.BackRight)
+                                    block.TopVerticesHeights.BackRight = Mathf.Clamp01(block.TopVerticesHeights.BackRight + dt);
+                                if (verticesExisting.ForwardLeft)
+                                    block.TopVerticesHeights.ForwardLeft = Mathf.Clamp01(block.TopVerticesHeights.ForwardLeft + dt);
+                                if (verticesExisting.ForwardRight)
+                                    block.TopVerticesHeights.ForwardRight = Mathf.Clamp01(block.TopVerticesHeights.ForwardRight + dt);
+                            }
                             Target.GenerateChunkMeshes();
                             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
                         }
