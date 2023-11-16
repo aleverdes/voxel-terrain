@@ -11,8 +11,10 @@ namespace AleVerDes.VoxelTerrain
     {
         [SerializeField] private WorldSettings _worldSettings;
 
-        [HideInInspector] [SerializeField] private Block[] _blocks;
         [HideInInspector] [SerializeField] private Chunk[] _chunks;
+        [HideInInspector] [SerializeField] private byte[] _cellTextures;
+        [HideInInspector] [SerializeField] private float[] _verticesHeights;
+        [HideInInspector] [SerializeField] private List<int> _avoidedCells = new List<int>();
 
         [HideInInspector] public WorldTool LastWorldTool = WorldTool.None;
         
@@ -21,28 +23,26 @@ namespace AleVerDes.VoxelTerrain
         {
             Clear();
             SetupChunks();
-            SetupBlocks();
+            SetupCellTextures();
+            SetupVerticesHeights();
             GenerateChunkMeshes();
         }
 
         private void Clear()
         {
-            _blocks = null;
+            _cellTextures = null;
+            _verticesHeights = null;
+            _avoidedCells.Clear();
+            
             foreach (var chunk in _chunks)
             {
                 if (!chunk)
-                {
                     continue;
-                }
-                
+
                 if (Application.isPlaying)
-                {
                     Destroy(chunk.gameObject);
-                }
                 else
-                {
                     DestroyImmediate(chunk.gameObject);
-                }
             }
 
             _chunks = null;
@@ -51,7 +51,7 @@ namespace AleVerDes.VoxelTerrain
         private void SetupChunks()
         {
             var xSize = _worldSettings.WorldSize.x / _worldSettings.ChunkSize.x;
-            var zSize = _worldSettings.WorldSize.z / _worldSettings.ChunkSize.y;
+            var zSize = _worldSettings.WorldSize.y / _worldSettings.ChunkSize.y;
 
             _chunks = new Chunk[xSize * zSize];
 
@@ -72,78 +72,28 @@ namespace AleVerDes.VoxelTerrain
             }
         }
 
-        private void SetupBlocks()
+        private void SetupCellTextures()
         {
-            _blocks = new Block[_worldSettings.WorldSize.x * _worldSettings.WorldSize.y * _worldSettings.WorldSize.z];
+            _cellTextures = new byte[_worldSettings.WorldSize.x * _worldSettings.WorldSize.y];
             for (var x = 0; x < _worldSettings.WorldSize.x; x++)
             {
-                for (var y = 0; y < _worldSettings.WorldSize.y; y++)
+                for (var z = 0; z < _worldSettings.WorldSize.y; z++)
                 {
-                    for (var z = 0; z < _worldSettings.WorldSize.z; z++)
-                    {
-                        ref var block = ref GetBlock(x, y, z);
-                        block.Void = true;
-
-                        block.Position = new Vector3Int(x, y, z);
-                        
-                        block.Top = new BlockFace()
-                        {
-                            Draw = true,
-                            LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
-                        };
-                        block.Bottom = new BlockFace()
-                        {
-                            Draw = true,
-                            LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
-                        };
-                        block.Left = new BlockFace()
-                        {
-                            Draw = true,
-                            LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
-                        };
-                        block.Right = new BlockFace()
-                        {
-                            Draw = true,
-                            LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
-                        };
-                        block.Forward = new BlockFace()
-                        {
-                            Draw = true,
-                            LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
-                        };
-                        block.Back = new BlockFace()
-                        {
-                            Draw = true,
-                            LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
-                        };
-                        
-                        block.TopVerticesHeights = new BlockTopVerticesHeights
-                        {
-                            ForwardRight = 1,
-                            ForwardLeft = 1,
-                            BackRight = 1,
-                            BackLeft = 1
-                        };
-                    }
+                    ref var cellTexture = ref GetCellTexture(x, z);
+                    cellTexture = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length);
                 }
             }
+        }
 
-            var halfHeight = _worldSettings.WorldSize.y / 2;
+        private void SetupVerticesHeights()
+        {
+            _verticesHeights = new float[(_worldSettings.WorldSize.x + 1) * (_worldSettings.WorldSize.y + 1)];
             for (var x = 0; x < _worldSettings.WorldSize.x; x++)
             {
-                for (var y = 0; y < halfHeight; y++)
+                for (var z = 0; z < _worldSettings.WorldSize.y; z++)
                 {
-                    for (var z = 0; z < _worldSettings.WorldSize.z; z++)
-                    {
-                        ref var block = ref GetBlock(x, y, z);
-                        block.Void = false;
-                    }
+                    ref var vertex = ref GetVertexHeight(x, z);
+                    vertex = 0;
                 }
             }
         }
@@ -154,9 +104,9 @@ namespace AleVerDes.VoxelTerrain
                 chunk.GenerateMesh();
         }
 
-        public void GenerateChunkMeshes(IEnumerable<Vector3Int> affectedBlockPositions)
+        public void GenerateChunkMeshes(IEnumerable<Vector2Int> affectedBlockPositions)
         {
-            var blocks = new HashSet<Vector3Int>();
+            var blocks = new HashSet<Vector2Int>();
             foreach (var affectedBlockPosition in affectedBlockPositions)
             {
                 blocks.Add(affectedBlockPosition);
@@ -176,30 +126,107 @@ namespace AleVerDes.VoxelTerrain
                 affectedChunk.GenerateMesh();
         }
         
-        public Chunk GetChunk(Vector3Int position)
+        public Chunk GetChunk(Vector2Int position)
         {
             foreach (var chunk in _chunks)
-                if (chunk.Rect.Contains(new Vector2Int(position.x, position.z)))
+                if (chunk.Rect.Contains(new Vector2Int(position.x, position.y)))
                     return chunk;
 
             return null;
         }
 
-        public ref Block GetBlock(Vector3Int position)
+        public int GetCellIndex(Vector2Int position)
         {
-            return ref GetBlock(position.x, position.y, position.z);
+            return GetCellTexture(position.x, position.y);
         }
 
-        public ref Block GetBlock(int x, int y, int z)
+        public int GetCellIndex(int x, int z)
         {
             try
             {
-                return ref _blocks[x + y * _worldSettings.WorldSize.x + z * _worldSettings.WorldSize.x * _worldSettings.WorldSize.y];
+                return x + z * _worldSettings.WorldSize.x;
             }
             catch (Exception e)
             { 
-                Debug.LogError($"Index out of bounds: x[{x}], y[{y}], z[{z}]; world ({_worldSettings.WorldSize.x}, {_worldSettings.WorldSize.y}, {_worldSettings.WorldSize.z}); formula is {x + y * _worldSettings.WorldSize.x + z * _worldSettings.WorldSize.x * _worldSettings.WorldSize.y} (max is {_worldSettings.WorldSize.x * _worldSettings.WorldSize.y * _worldSettings.WorldSize.z})");
+                Debug.LogError($"Block index out of bounds: x[{x}], z[{z}]; world ({_worldSettings.WorldSize.x}, {_worldSettings.WorldSize.y}); formula is {x + z * _worldSettings.WorldSize.x} (max is {_worldSettings.WorldSize.x * _worldSettings.WorldSize.y})");
                 throw;
+            }
+        }
+
+        public ref byte GetCellTexture(Vector2Int position)
+        {
+            return ref GetCellTexture(position.x, position.y);
+        }
+
+        public ref byte GetCellTexture(int x, int z)
+        {
+            try
+            {
+                return ref _cellTextures[GetCellIndex(x, z)];
+            }
+            catch (Exception e)
+            { 
+                Debug.LogError($"Cell texture index out of bounds: x[{x}], z[{z}]; world ({_worldSettings.WorldSize.x}, {_worldSettings.WorldSize.y}); formula is {x + z * _worldSettings.WorldSize.x} (max is {_worldSettings.WorldSize.x * _worldSettings.WorldSize.y})");
+                throw;
+            }
+        }
+
+        public int GetVertexIndex(Vector2Int position)
+        {
+            return GetVertexIndex(position.x, position.y);
+        }
+
+        public int GetVertexIndex(int x, int z)
+        {
+            try
+            {
+                return x + z * (_worldSettings.WorldSize.x + 1);
+            }
+            catch (Exception e)
+            { 
+                Debug.LogError($"Vertex index out of bounds: x[{x}], z[{z}]; world ({_worldSettings.WorldSize.x}, {_worldSettings.WorldSize.y}); formula is {x + z * (_worldSettings.WorldSize.x + 1)} (max is {(_worldSettings.WorldSize.x + 1) * (_worldSettings.WorldSize.y + 1)})");
+                throw;
+            }
+        }
+
+        public ref float GetVertexHeight(Vector2Int position)
+        {
+            return ref GetVertexHeight(position.x, position.y);
+        }
+
+        public ref float GetVertexHeight(int x, int z)
+        {
+            try
+            {
+                return ref _verticesHeights[GetVertexIndex(x, z)];
+            }
+            catch (Exception e)
+            { 
+                Debug.LogError($"Vertex index out of bounds: x[{x}], z[{z}]; world ({_worldSettings.WorldSize.x}, {_worldSettings.WorldSize.y}); formula is {x + z * (_worldSettings.WorldSize.x + 1)} (max is {(_worldSettings.WorldSize.x + 1) * (_worldSettings.WorldSize.y + 1)})");
+                throw;
+            }
+        }
+        
+        public bool IsCellAvoided(int index)
+        {
+            return _avoidedCells.Contains(index);
+        }
+        
+        public void SetCellAvoided(int index, bool value)
+        {
+            if (value)
+            {
+                if (!_avoidedCells.Contains(index))
+                {
+                    _avoidedCells.Add(index);
+                }
+            }
+            else
+            {
+                if (_avoidedCells.Contains(index))
+                {
+                    _avoidedCells.Remove(index);
+                }
             }
         }
         

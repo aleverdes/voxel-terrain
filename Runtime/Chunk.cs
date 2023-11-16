@@ -24,7 +24,7 @@ namespace AleVerDes.VoxelTerrain
         
         public RectInt Rect => new RectInt(_chunkPosition, _world.WorldSettings.ChunkSize);
 
-        private Vector3Int WorldSize => _world.WorldSettings.WorldSize;
+        private Vector2Int WorldSize => _world.WorldSettings.WorldSize;
         private Vector2Int ChunkSize => _world.WorldSettings.ChunkSize;
         private float BlockSize => _world.WorldSettings.BlockSize;
         private Atlas Atlas => _world.WorldSettings.WorldAtlas;
@@ -50,17 +50,9 @@ namespace AleVerDes.VoxelTerrain
         public void GenerateMesh()
         {
             if (!_mesh)
-            {
                 _mesh = new Mesh();
-            }
             else
-            {
                 _mesh.Clear();
-            }
-            
-            var xSize = WorldSize.x;
-            var ySize = WorldSize.y;
-            var zSize = WorldSize.z;
 
             var vertices = new List<Vector3>();
             var uvs = new List<Vector2>();
@@ -71,277 +63,52 @@ namespace AleVerDes.VoxelTerrain
 
             var trianglesCount = 0;
             
-            for (int x = _chunkPosition.x; x < _chunkPosition.x + ChunkSize.x; x++)
+            for (var x = _chunkPosition.x; x < _chunkPosition.x + ChunkSize.x; x++)
             {
-                for (int y = 0; y < WorldSize.y; y++)
+                for (var z = _chunkPosition.y; z < _chunkPosition.y + ChunkSize.y; z++)
                 {
-                    for (int z = _chunkPosition.y; z < _chunkPosition.y + ChunkSize.y; z++)
+                    if (_world.IsCellAvoided(_world.GetCellIndex(x, z)))
+                        continue;
+
+                    vertices.AddRange(new []
                     {
-                        ref var block = ref _world.GetBlock(x, y, z);
-
-                        if (block.Void)
-                        {
-                            continue;
-                        }
-
-                        var face = default(BlockFace);
+                        new Vector3(x, 0, z) * BlockSize,
+                        new Vector3(x, 0, z + 1) * BlockSize,
+                        new Vector3(x + 1, 0, z + 1) * BlockSize,
+                        new Vector3(x + 1, 0, z) * BlockSize,
+                    });
                         
-                        var yh = block.TopVerticesHeights;
-
-                        face = block.Left;
-                        if (face.Draw && (block.Position.x > 0 && _world.GetBlock(x - 1, y, z).Void || block.Position.x == 0))
-                        {
-                            vertices.AddRange(new []
-                            {
-                                new Vector3(x, y, z) * BlockSize,
-                                new Vector3(x, y, z + 1) * BlockSize,
-                                new Vector3(x, y + yh.ForwardLeft, z + 1) * BlockSize,
-                                new Vector3(x, y + yh.BackLeft, z) * BlockSize,
-                            });
-                            
-                            triangles.AddRange(new []
-                            {
-                                trianglesCount * 4,
-                                trianglesCount * 4 + 1,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 3,
-                                trianglesCount * 4,
-                            });
-                            trianglesCount++;
-                            
-                            var atlasTextureData = Atlas.AtlasLayers[face.LayerIndex].Textures[face.LayerTextureIndex];
-                            
-                            uvs.AddRange(new []
-                            {
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
-                            });
-
-                            tangents.AddRange(new []
-                            {
-                                upTangent,
-                                upTangent,
-                                upTangent,
-                                upTangent
-                            });
-                        }
-
-                        face = block.Right;
-                        if (face.Draw && (block.Position.x < xSize - 1 && _world.GetBlock(x + 1, y, z).Void || block.Position.x == xSize - 1))
-                        {
-                            vertices.AddRange(new []
-                            {
-                                new Vector3(x + 1, y, z + 1) * BlockSize,
-                                new Vector3(x + 1, y, z) * BlockSize,
-                                new Vector3(x + 1, y + yh.BackRight, z) * BlockSize,
-                                new Vector3(x + 1, y + yh.ForwardRight, z + 1) * BlockSize,
-                            });
-                            
-                            triangles.AddRange(new []
-                            {
-                                trianglesCount * 4,
-                                trianglesCount * 4 + 1,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 3,
-                                trianglesCount * 4,
-                            });
-                            trianglesCount++;
-                            
-                            var atlasTextureData = Atlas.AtlasLayers[face.LayerIndex].Textures[face.LayerTextureIndex];
-                            
-                            uvs.AddRange(new []
-                            {
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
-                            });
-
-                            tangents.AddRange(new []
-                            {
-                                upTangent,
-                                upTangent,
-                                upTangent,
-                                upTangent
-                            });
-                        }
-
-                        face = block.Top;
-                        if (face.Draw && (block.Position.y < ySize - 1 && _world.GetBlock(x, y + 1, z).Void || block.Position.y == ySize - 1))
-                        {
-                            vertices.AddRange(new []
-                            {
-                                new Vector3(x, y + yh.BackLeft, z) * BlockSize,
-                                new Vector3(x, y + yh.ForwardLeft, z + 1) * BlockSize,
-                                new Vector3(x + 1, y + yh.ForwardRight, z + 1) * BlockSize,
-                                new Vector3(x + 1, y + yh.BackRight, z) * BlockSize,
-                            });
-                            
-                            triangles.AddRange(new []
-                            {
-                                trianglesCount * 4,
-                                trianglesCount * 4 + 1,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 3,
-                                trianglesCount * 4,
-                            });
-                            trianglesCount++;
-                            
-                            var atlasTextureData = Atlas.AtlasLayers[face.LayerIndex].Textures[face.LayerTextureIndex];
-                            
-                            uvs.AddRange(new []
-                            {
-                                atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
-                            });
-
-                            tangents.AddRange(new []
-                            {
-                                upTangent,
-                                upTangent,
-                                upTangent,
-                                upTangent
-                            });
-                        }
-
-                        face = block.Bottom;
-                        if (face.Draw && (block.Position.y > 0 && _world.GetBlock(x, y - 1, z).Void || block.Position.y == 0))
-                        {
-                            vertices.AddRange(new []
-                            {
-                                new Vector3(x, y, z + 1) * BlockSize,
-                                new Vector3(x, y, z) * BlockSize,
-                                new Vector3(x + 1, y, z) * BlockSize,
-                                new Vector3(x + 1, y, z + 1) * BlockSize,
-                            });
-                            
-                            triangles.AddRange(new []
-                            {
-                                trianglesCount * 4,
-                                trianglesCount * 4 + 1,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 3,
-                                trianglesCount * 4,
-                            });
-                            trianglesCount++;
-                            
-                            var atlasTextureData = Atlas.AtlasLayers[face.LayerIndex].Textures[face.LayerTextureIndex];
-                            
-                            uvs.AddRange(new []
-                            {
-                                atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
-                            });
-
-                            tangents.AddRange(new []
-                            {
-                                upTangent,
-                                upTangent,
-                                upTangent,
-                                upTangent
-                            });
-                        }
-
-                        face = block.Back;
-                        if (face.Draw && (block.Position.z > 0 && _world.GetBlock(x, y, z - 1).Void || block.Position.z == 0))
-                        {
-                            vertices.AddRange(new []
-                            {
-                                new Vector3(x + 1, y, z) * BlockSize,
-                                new Vector3(x, y, z) * BlockSize,
-                                new Vector3(x, y + yh.BackLeft, z) * BlockSize,
-                                new Vector3(x + 1, y + yh.BackRight, z) * BlockSize,
-                            });
-                            
-                            triangles.AddRange(new []
-                            {
-                                trianglesCount * 4,
-                                trianglesCount * 4 + 1,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 3,
-                                trianglesCount * 4,
-                            });
-                            trianglesCount++;
-                            
-                            var atlasTextureData = Atlas.AtlasLayers[face.LayerIndex].Textures[face.LayerTextureIndex];
-                            
-                            uvs.AddRange(new []
-                            {
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
-                            });
-
-                            tangents.AddRange(new []
-                            {
-                                upTangent,
-                                upTangent,
-                                upTangent,
-                                upTangent
-                            });
-                        }
+                    triangles.AddRange(new []
+                    {
+                        trianglesCount * 4,
+                        trianglesCount * 4 + 1,
+                        trianglesCount * 4 + 2,
+                        trianglesCount * 4 + 2,
+                        trianglesCount * 4 + 3,
+                        trianglesCount * 4,
+                    });
+                    trianglesCount++;
                         
-                        face = block.Forward;
-                        if (face.Draw && (block.Position.z < zSize - 1 && _world.GetBlock(x, y, z + 1).Void || block.Position.z == zSize - 1))
-                        {
-                            vertices.AddRange(new []
-                            {
-                                new Vector3(x, y, z + 1) * BlockSize,
-                                new Vector3(x + 1, y, z + 1) * BlockSize,
-                                new Vector3(x + 1, y + yh.ForwardRight, z + 1) * BlockSize,
-                                new Vector3(x, y + yh.ForwardLeft, z + 1) * BlockSize,
-                            });
-                            
-                            triangles.AddRange(new []
-                            {
-                                trianglesCount * 4,
-                                trianglesCount * 4 + 1,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 2,
-                                trianglesCount * 4 + 3,
-                                trianglesCount * 4,
-                            });
-                            trianglesCount++;
-                            
-                            var atlasTextureData = Atlas.AtlasLayers[face.LayerIndex].Textures[face.LayerTextureIndex];
-                            
-                            uvs.AddRange(new []
-                            {
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1f - atlasTextureData.UvSize.y),
-                                atlasTextureData.UvPosition + new Vector2(0, 1),
-                                atlasTextureData.UvPosition + new Vector2(atlasTextureData.UvSize.x, 1),
-                            });
+                    var uvPosition = Atlas.TexturesPositions[_world.GetCellTexture(x, z)];
+                    var uvSize = Atlas.TextureSizeInAtlas;
 
-                            tangents.AddRange(new []
-                            {
-                                upTangent,
-                                upTangent,
-                                upTangent,
-                                upTangent
-                            });
-                        }
-                        
-                        //
-                    }
+                    uvs.AddRange(new []
+                    {
+                        uvPosition + new Vector2(0, 1f - uvSize.y),
+                        uvPosition + new Vector2(0, 1),
+                        uvPosition + new Vector2(uvSize.x, 1),
+                        uvPosition + new Vector2(uvSize.x, 1f - uvSize.y),
+                    });
+
+                    tangents.AddRange(new []
+                    {
+                        upTangent,
+                        upTangent,
+                        upTangent,
+                        upTangent
+                    });
                 }
             }
-
-            // TODO: Changed way to fix UV.y
-            for (int i = 0; i < uvs.Count; i++) 
-                uvs[i] -= new Vector2(0, Atlas.TextureSize / (float)Atlas.Size);
 
             _mesh.vertices = vertices.ToArray();
             _mesh.uv = uvs.ToArray();
@@ -350,21 +117,15 @@ namespace AleVerDes.VoxelTerrain
             
             _mesh.RecalculateNormals();
 
-            if (!_meshFilter)
-            {
+            if (!_meshFilter) 
                 _meshFilter = _meshObject.AddComponent<MeshFilter>();
-            }
 
-            if (!_meshCollider)
-            {
+            if (!_meshCollider) 
                 _meshCollider = _meshObject.AddComponent<MeshCollider>();
-            }
 
-            if (!_meshRenderer)
-            {
+            if (!_meshRenderer) 
                 _meshRenderer = _meshObject.AddComponent<MeshRenderer>();
-            }
-            
+
             _meshRenderer.sharedMaterial = _world.WorldSettings.WorldMaterial;
             
             _meshCollider.sharedMesh = _mesh;

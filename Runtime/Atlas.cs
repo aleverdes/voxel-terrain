@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -16,8 +17,9 @@ namespace AleVerDes.VoxelTerrain
         public AtlasLayer[] Layers;
 
         [Header("Texture Atlas")]
+        public Vector2[] TexturesPositions;
+        public Vector2 TextureSizeInAtlas;
         public Texture TextureAtlas;
-        public AtlasLayerData[] AtlasLayers;
 
 #if UNITY_EDITOR
         [ContextMenu("Find Atlas Layers")]
@@ -50,19 +52,14 @@ namespace AleVerDes.VoxelTerrain
             var atlasTextureLength = Size / TextureSize;
             
             var uvSize = (float) TextureSize / Size;
+            TextureSizeInAtlas = new Vector2(uvSize, uvSize);
 
             var atlas = new Texture2D(Size, Size, TextureFormat.RGBA32, 0, true);
-            
-            AtlasLayers = new AtlasLayerData[Layers.Length];
-
+            var textures = new List<Vector2>();
+                
             for (var layerIndex = 0; layerIndex < Layers.Length; layerIndex++)
             {
                 var layer = Layers[layerIndex];
-                AtlasLayers[layerIndex] = new AtlasLayerData()
-                {
-                    Textures = new AtlasTextureData[layer.Textures.Length]
-                };
-                
                 for (var layerTextureIndex = 0; layerTextureIndex < layer.Textures.Length; layerTextureIndex++)
                 {
                     var texture = layer.Textures[layerTextureIndex];
@@ -72,17 +69,12 @@ namespace AleVerDes.VoxelTerrain
                     var scaledTexture = TextureScaler.Scale(texture, TextureSize, TextureSize);
                     var pixels = texture.GetPixels(0, 0, scaledTexture.width, scaledTexture.height);
                     atlas.SetPixels(TextureSize * x, Size - TextureSize * (y + 1), TextureSize, TextureSize, pixels);
-
-                    AtlasLayers[layerIndex].Textures[layerTextureIndex] = new AtlasTextureData()
-                    {
-                        UvPosition = new Vector2(x, y) * uvSize,
-                        UvSize = new Vector2(uvSize, uvSize)
-                    };
-
+                    textures.Add(new Vector2(x, y - 1) * uvSize);
                     atlasTextureIndex++;
                 }
             }
-
+            TexturesPositions = textures.ToArray();
+            
             var pathToAtlas = AssetDatabase.GetAssetPath(this);
             var pathToPng = Path.Combine(Path.GetDirectoryName(pathToAtlas), Path.GetFileNameWithoutExtension(pathToAtlas) + ".png");
             var pngBytes = atlas.EncodeToPNG();
@@ -90,6 +82,7 @@ namespace AleVerDes.VoxelTerrain
             AssetDatabase.ImportAsset(pathToPng);
             
             TextureAtlas = AssetDatabase.LoadAssetAtPath<Texture>(pathToPng);
+            TextureAtlas.filterMode = FilterMode.Point;
         }
 #endif
     }

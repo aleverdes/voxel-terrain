@@ -4,18 +4,18 @@ namespace AleVerDes.VoxelTerrain
 {
     public static class VoxelTerrainUtils
     {
-        public static Vector3Int[] GetNeighbours(Vector3Int blockToGettingNeighbours)
+        public static Vector2Int[] GetNeighbours(Vector2Int blockPosition)
         {
             return new[]
             {
-                blockToGettingNeighbours + Vector3Int.left,
-                blockToGettingNeighbours + Vector3Int.right,
-                blockToGettingNeighbours + Vector3Int.forward,
-                blockToGettingNeighbours + Vector3Int.back,
-                blockToGettingNeighbours + Vector3Int.left + Vector3Int.forward,
-                blockToGettingNeighbours + Vector3Int.right + Vector3Int.forward,
-                blockToGettingNeighbours + Vector3Int.left + Vector3Int.back,
-                blockToGettingNeighbours + Vector3Int.right + Vector3Int.back,
+                blockPosition + Vector2Int.left,
+                blockPosition + Vector2Int.right,
+                blockPosition + Vector2Int.up,
+                blockPosition + Vector2Int.down,
+                blockPosition + Vector2Int.left + Vector2Int.up,
+                blockPosition + Vector2Int.right + Vector2Int.up,
+                blockPosition + Vector2Int.left + Vector2Int.down,
+                blockPosition + Vector2Int.right + Vector2Int.down,
             };
         }
     }
