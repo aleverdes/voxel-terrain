@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 461ffb756aad4f89b74b0d5367e5a9c5, type: 3}
   m_Name: Atlas
   m_EditorClassIdentifier: 
-  Size: 512
-  TextureSize: 32
+  Size: 1024
+  TextureSize: 64
   Layers:
   - {fileID: 11400000, guid: f83a1b0b5447442f2ab8efa8060e3409, type: 2}
   - {fileID: 11400000, guid: 8b72052a188bf460681d739b3288d52d, type: 2}

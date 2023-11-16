@@ -8,12 +8,7 @@ namespace AleVerDes.VoxelTerrain
     [ExecuteInEditMode]
     public class World : MonoBehaviour
     {
-        [Header("World Setting")] 
-        public Vector3Int WorldSize = new Vector3Int(128, 32, 128);
-        public Vector2Int ChunkSize = new Vector2Int(16, 16);
-        public float BlockSize = 1f;
-        public Material WorldMaterial;
-        public Atlas WorldAtlas;
+        [SerializeField] private WorldSettings _worldSettings;
 
         [HideInInspector] [SerializeField] private Block[] _blocks;
         [HideInInspector] [SerializeField] private Chunk[] _chunks;
@@ -54,8 +49,8 @@ namespace AleVerDes.VoxelTerrain
 
         private void SetupChunks()
         {
-            var xSize = WorldSize.x / ChunkSize.x;
-            var zSize = WorldSize.z / ChunkSize.y;
+            var xSize = _worldSettings.WorldSize.x / _worldSettings.ChunkSize.x;
+            var zSize = _worldSettings.WorldSize.z / _worldSettings.ChunkSize.y;
 
             _chunks = new Chunk[xSize * zSize];
 
@@ -70,7 +65,7 @@ namespace AleVerDes.VoxelTerrain
                     chunkObject.transform.localScale = Vector3.one;
 
                     var chunk = chunkObject.AddComponent<Chunk>();
-                    chunk.Setup(this, new Vector2Int(x * ChunkSize.x, z * ChunkSize.y));
+                    chunk.Setup(this, new Vector2Int(x * _worldSettings.ChunkSize.x, z * _worldSettings.ChunkSize.y));
                     _chunks[x + z * xSize] = chunk;
                 }
             }
@@ -78,12 +73,12 @@ namespace AleVerDes.VoxelTerrain
 
         private void SetupBlocks()
         {
-            _blocks = new Block[WorldSize.x * WorldSize.y * WorldSize.z];
-            for (var x = 0; x < WorldSize.x; x++)
+            _blocks = new Block[_worldSettings.WorldSize.x * _worldSettings.WorldSize.y * _worldSettings.WorldSize.z];
+            for (var x = 0; x < _worldSettings.WorldSize.x; x++)
             {
-                for (var y = 0; y < WorldSize.y; y++)
+                for (var y = 0; y < _worldSettings.WorldSize.y; y++)
                 {
-                    for (var z = 0; z < WorldSize.z; z++)
+                    for (var z = 0; z < _worldSettings.WorldSize.z; z++)
                     {
                         ref var block = ref GetBlock(x, y, z);
                         block.Void = true;
@@ -94,48 +89,48 @@ namespace AleVerDes.VoxelTerrain
                         {
                             Draw = true,
                             LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
+                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
                         block.Bottom = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
+                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
                         block.Left = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
+                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
                         block.Right = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
+                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
                         block.Forward = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
+                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
                         block.Back = new BlockFace()
                         {
                             Draw = true,
                             LayerIndex = 0,
-                            LayerTextureIndex = (byte)Random.Range(0, WorldAtlas.Layers[0].Textures.Length)
+                            LayerTextureIndex = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length)
                         };
                     }
                 }
             }
 
-            var halfHeight = WorldSize.y / 2;
-            for (var x = 0; x < WorldSize.x; x++)
+            var halfHeight = _worldSettings.WorldSize.y / 2;
+            for (var x = 0; x < _worldSettings.WorldSize.x; x++)
             {
                 for (var y = 0; y < halfHeight; y++)
                 {
-                    for (var z = 0; z < WorldSize.z; z++)
+                    for (var z = 0; z < _worldSettings.WorldSize.z; z++)
                     {
                         ref var block = ref GetBlock(x, y, z);
                         block.Void = false;
