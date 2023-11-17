@@ -21,6 +21,7 @@ namespace AleVerDes.VoxelTerrain
         public Vector2[] TexturesPositions;
         public Vector2 TextureSizeInAtlas;
         public Texture TextureAtlas;
+        public float TextureRectScale = 0.99f;
 
 #if UNITY_EDITOR
         [ContextMenu("Find Atlas Layers")]

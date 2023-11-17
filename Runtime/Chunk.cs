@@ -93,6 +93,9 @@ namespace AleVerDes.VoxelTerrain
                     var uvPosition = Atlas.TexturesPositions[_world.GetCellTexture(x, z)];
                     var uvSize = Atlas.TextureSizeInAtlas;
 
+                    uvPosition = uvPosition + 0.5f * (uvSize * (1f - Atlas.TextureRectScale));
+                    uvSize = uvSize * Atlas.TextureRectScale;
+
                     uvs.AddRange(new []
                     {
                         uvPosition.WithY(-uvPosition.y) + new Vector2(0, 1f - uvSize.y),
