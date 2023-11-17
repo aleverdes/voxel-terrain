@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf9173a5691f430cb29ae49f77c37297, type: 3}
   m_Name: Voxel Terrain Settings
   m_EditorClassIdentifier: 
-  WorldSize: {x: 64, y: 64}
+  WorldSize: {x: 100, y: 100}
   ChunkSize: {x: 16, y: 16}
+  HeightLimits: {x: -10, y: 10}
   BlockSize: 1
   WorldMaterial: {fileID: 2100000, guid: a547f7024378a4d9aa1a0502fcb060e2, type: 2}
   WorldAtlas: {fileID: 11400000, guid: d78d0f879fe3f4a5c8c3dbca6d3ce10c, type: 2}
