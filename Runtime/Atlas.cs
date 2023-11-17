@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -85,5 +86,22 @@ namespace AleVerDes.VoxelTerrain
             TextureAtlas.filterMode = FilterMode.Point;
         }
 #endif
+        
+        public byte GetTextureIndex(Texture2D texture)
+        {
+            byte textureIndex = 0;
+            foreach (var layer in Layers)
+            {
+                foreach (var t in layer.Textures)
+                {
+                    if (texture == t)
+                        return textureIndex;
+
+                    textureIndex++;
+                }
+            }
+
+            throw new Exception("Texture not found in atlas");
+        }
     }
 }
