@@ -40,10 +40,10 @@ namespace AleVerDes.VoxelTerrain
         
         private SerializedProperty _worldSettingsProperty;
         
-        private Dictionary<AtlasLayer, bool> _atlasLayerFoldouts;
+        private Dictionary<VoxelTerrainLayer, bool> _atlasLayerFoldouts;
         private Texture2D _selectedAtlasLayerTexture;
         private byte _selectedCellTextureIndex;
-        private AtlasLayer _selectedAtlasLayer;
+        private VoxelTerrainLayer _selectedAtlasLayer;
         private int _selectedGridElement;
 
         private bool _initialized;
@@ -65,7 +65,7 @@ namespace AleVerDes.VoxelTerrain
             _worldSettingsProperty ??= serializedObject.FindProperty("_worldSettings");
 
             var anyShown = false;
-            _atlasLayerFoldouts = new Dictionary<AtlasLayer, bool>();
+            _atlasLayerFoldouts = new Dictionary<VoxelTerrainLayer, bool>();
             foreach (var layer in Target.WorldSettings.WorldAtlas.Layers)
             {
                 _atlasLayerFoldouts.Add(layer, !anyShown);
@@ -176,20 +176,14 @@ namespace AleVerDes.VoxelTerrain
         private void OnScene(SceneView sceneView)
         {
             if (Tool == WorldTool.None)
-            {
                 return;
-            }
-            
+
             if (!Target)
-            {
                 return;
-            }
-            
+
             if (!Target.WorldSettings)
-            {
                 return;
-            }
-            
+
             Selection.activeGameObject = Target.gameObject;
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 

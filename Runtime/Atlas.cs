@@ -14,7 +14,7 @@ namespace AleVerDes.VoxelTerrain
         [Header("Atlas Settings")]
         [Min(64)] public int Size = 512;
         [Min(16)] public int TextureSize = 32;
-        public AtlasLayer[] Layers;
+        public VoxelTerrainLayer[] Layers;
 
         [Header("Texture Atlas")]
         public Vector2[] TexturesPositions;
@@ -35,12 +35,12 @@ namespace AleVerDes.VoxelTerrain
             var folderPath = Path.GetDirectoryName(assetPath);
             var textureGuids = AssetDatabase.FindAssets("t:AtlasLayer", new[] { folderPath });
             
-            Layers = new AtlasLayer[textureGuids.Length];
+            Layers = new VoxelTerrainLayer[textureGuids.Length];
 
             for (var i = 0; i < textureGuids.Length; i++)
             {
                 var atlasLayerGuidGuid = textureGuids[i];
-                var atlasLayer = AssetDatabase.LoadAssetAtPath<AtlasLayer>(AssetDatabase.GUIDToAssetPath(atlasLayerGuidGuid));
+                var atlasLayer = AssetDatabase.LoadAssetAtPath<VoxelTerrainLayer>(AssetDatabase.GUIDToAssetPath(atlasLayerGuidGuid));
                 Layers[i] = atlasLayer;
             }
         }
