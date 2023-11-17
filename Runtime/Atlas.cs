@@ -67,9 +67,9 @@ namespace AleVerDes.VoxelTerrain
                     var y = Mathf.FloorToInt((float)atlasTextureIndex / atlasTextureLength);
 
                     var scaledTexture = TextureScaler.Scale(texture, TextureSize, TextureSize);
-                    var pixels = texture.GetPixels(0, 0, scaledTexture.width, scaledTexture.height);
+                    var pixels = scaledTexture.GetPixels(0, 0, scaledTexture.width, scaledTexture.height);
                     atlas.SetPixels(TextureSize * x, Size - TextureSize * (y + 1), TextureSize, TextureSize, pixels);
-                    textures.Add(new Vector2(x, y - 1) * uvSize);
+                    textures.Add(new Vector2(x, y) * uvSize);
                     atlasTextureIndex++;
                 }
             }

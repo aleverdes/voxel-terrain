@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AleVerDes.UnityUtils;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -17,6 +18,7 @@ namespace AleVerDes.VoxelTerrain
 
         private readonly List<Vector2Int> _selectedCells = new();
         private readonly List<Vector2Int> _hoveredVertices = new();
+        private readonly List<Vector2Int> _hoveredCells = new();
 
         private static readonly Color SelectorColor = new Color(1, 0, 0, 0.66f);
         private static readonly Color SelectedCellColor = new Color(1, 0, 0, 0.33f);
@@ -38,15 +40,39 @@ namespace AleVerDes.VoxelTerrain
         
         private SerializedProperty _worldSettingsProperty;
         
+        private Dictionary<AtlasLayer, bool> _atlasLayerFoldouts;
+        private Texture2D _selectedAtlasLayerTexture;
+        private byte _selectedCellTextureIndex;
+        private AtlasLayer _selectedAtlasLayer;
+        private int _selectedGridElement;
+
+        private bool _initialized;
+
         private WorldTool Tool
         {
             get => Target.LastWorldTool;
             set => Target.LastWorldTool = value;
         }
 
-        private void InitializeGUI()
+        private void Initialize()
         {
+            if (_initialized)
+                return;
+            
+            if (!Target.WorldSettings)
+                return;
+
             _worldSettingsProperty ??= serializedObject.FindProperty("_worldSettings");
+
+            var anyShown = false;
+            _atlasLayerFoldouts = new Dictionary<AtlasLayer, bool>();
+            foreach (var layer in Target.WorldSettings.WorldAtlas.Layers)
+            {
+                _atlasLayerFoldouts.Add(layer, !anyShown);
+                anyShown = true;
+            }
+
+            _initialized = true;
         }
         
         public void OnEnable()
@@ -68,7 +94,7 @@ namespace AleVerDes.VoxelTerrain
 
         public override void OnInspectorGUI()
         {
-            InitializeGUI();
+            Initialize();
             
             EditorGUILayout.PropertyField(_worldSettingsProperty);
             
@@ -93,6 +119,52 @@ namespace AleVerDes.VoxelTerrain
                 SetTool(WorldTool.CellRestoring);
 
             EditorGUILayout.EndHorizontal();
+
+            if (Tool == WorldTool.Painting)
+                InspectorPainting();
+        }
+
+        private void InspectorPainting()
+        {
+            foreach (var atlasLayer in _atlasLayerFoldouts.Keys.ToArray())
+            {
+                _atlasLayerFoldouts[atlasLayer] = EditorGUILayout.BeginFoldoutHeaderGroup(_atlasLayerFoldouts[atlasLayer], atlasLayer.name);
+
+                if (_atlasLayerFoldouts[atlasLayer])
+                {
+                    const int elementsPerRow = 5;
+                    const float widthPerElement = 64f;
+                    const float heightPerElement = 64f;
+
+                    var maxGridWidth = atlasLayer.Textures.Length > elementsPerRow ? widthPerElement * elementsPerRow : widthPerElement * atlasLayer.Textures.Length;
+                    var maxGridHeight = Mathf.CeilToInt((float)atlasLayer.Textures.Length / elementsPerRow) * heightPerElement;
+
+
+                    var index = _selectedAtlasLayer ? _selectedGridElement : -1;
+                    _selectedGridElement = GUILayout.SelectionGrid(index, atlasLayer.Textures, elementsPerRow, GUILayout.MaxWidth(maxGridWidth), GUILayout.MaxHeight(maxGridHeight));
+
+                    if (_selectedGridElement >= 0)
+                    {
+                        _selectedAtlasLayer = atlasLayer;
+                        _selectedAtlasLayerTexture = atlasLayer.Textures[_selectedGridElement];
+                    }
+                }
+
+                EditorGUILayout.EndFoldoutHeaderGroup();
+            }
+
+            _selectedCellTextureIndex = 0;
+            int selectedCellTextureIndex = 0;
+            foreach (var (atlasLayer, _) in _atlasLayerFoldouts)
+            {
+                foreach (var texture in atlasLayer.Textures)
+                {
+                    if (texture == _selectedAtlasLayerTexture)
+                        _selectedCellTextureIndex = (byte) selectedCellTextureIndex;
+
+                    selectedCellTextureIndex++;
+                }
+            }
         }
 
         private void SetTool(WorldTool tool)
@@ -327,8 +399,9 @@ namespace AleVerDes.VoxelTerrain
 
         private void DrawHoveredEdges()
         {
-            var hoveredCells = GetCellsByWorldPositionInRadius(_mouseWorldPosition, _paintingBrushSize);
-            foreach (var hoveredCell in hoveredCells) 
+            _hoveredCells.Clear();
+            _hoveredCells.AddRange(GetCellsByWorldPositionInRadius(_mouseWorldPosition, _paintingBrushSize));
+            foreach (var hoveredCell in _hoveredCells) 
                 DrawCellEdges(hoveredCell);
         }
         
@@ -507,6 +580,19 @@ namespace AleVerDes.VoxelTerrain
                 if (Tool == WorldTool.Selection)
                 {
                     
+                }
+                else if (Tool == WorldTool.Painting)
+                {
+                    if (!_selectedAtlasLayerTexture)
+                        return;
+                    
+                    foreach (var hoveredCell in _hoveredCells)
+                    {
+                        ref var cellTexture = ref Target.GetCellTexture(hoveredCell);
+                        cellTexture = _selectedCellTextureIndex;
+                    }
+                    Target.GenerateChunkMeshes(_hoveredCells);
+                    EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
                 }
                 else if (Tool == WorldTool.Height)
                 {

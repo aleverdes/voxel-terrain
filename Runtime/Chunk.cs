@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AleVerDes.UnityUtils;
 using UnityEngine;
 
 namespace AleVerDes.VoxelTerrain
@@ -94,10 +95,10 @@ namespace AleVerDes.VoxelTerrain
 
                     uvs.AddRange(new []
                     {
-                        uvPosition + new Vector2(0, 1f - uvSize.y),
-                        uvPosition + new Vector2(0, 1),
-                        uvPosition + new Vector2(uvSize.x, 1),
-                        uvPosition + new Vector2(uvSize.x, 1f - uvSize.y),
+                        uvPosition.WithY(-uvPosition.y) + new Vector2(0, 1f - uvSize.y),
+                        uvPosition.WithY(-uvPosition.y) + new Vector2(0, 1),
+                        uvPosition.WithY(-uvPosition.y) + new Vector2(uvSize.x, 1),
+                        uvPosition.WithY(-uvPosition.y) + new Vector2(uvSize.x, 1f - uvSize.y),
                     });
 
                     tangents.AddRange(new []

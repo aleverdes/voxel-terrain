@@ -80,7 +80,7 @@ namespace AleVerDes.VoxelTerrain
                 for (var z = 0; z < _worldSettings.WorldSize.y; z++)
                 {
                     ref var cellTexture = ref GetCellTexture(x, z);
-                    cellTexture = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[0].Textures.Length);
+                    cellTexture = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[Random.Range(0, 3)].Textures.Length);
                 }
             }
         }

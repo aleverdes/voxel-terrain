@@ -11,7 +11,6 @@ namespace AleVerDes.VoxelTerrain
     [CreateAssetMenu(fileName = "Atlas Layer", menuName = "Voxel Terrain/Atlas Layer", order = 1)]
     public class AtlasLayer : ScriptableObject
     {
-        public string Name;
         public Texture2D[] Textures;
 
 #if UNITY_EDITOR
