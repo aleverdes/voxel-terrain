@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace AleVerDes.VoxelTerrain
 {
@@ -17,7 +16,7 @@ namespace AleVerDes.VoxelTerrain
         [HideInInspector] [SerializeField] private List<int> _avoidedCells = new List<int>();
 
         [HideInInspector] public WorldTool LastWorldTool = WorldTool.None;
-        
+
         [ContextMenu("Setup")]
         public void Setup()
         {
@@ -27,7 +26,7 @@ namespace AleVerDes.VoxelTerrain
             SetupVerticesHeights();
             GenerateChunkMeshes();
         }
-
+        
         private void Clear()
         {
             _cellTextures = null;
@@ -80,7 +79,7 @@ namespace AleVerDes.VoxelTerrain
                 for (var z = 0; z < _worldSettings.WorldSize.y; z++)
                 {
                     ref var cellTexture = ref GetCellTexture(x, z);
-                    cellTexture = (byte)Random.Range(0, _worldSettings.WorldAtlas.Layers[Random.Range(0, 3)].Textures.Length);
+                    cellTexture = 0;
                 }
             }
         }
