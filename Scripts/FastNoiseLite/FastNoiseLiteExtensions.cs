@@ -27,13 +27,11 @@ namespace AleVerDes.Voxels
         {
             var minMaxNoise = new Vector2(float.MaxValue, float.MinValue);
             for (var i = 0; i < size.y; i++)
+            for (var j = 0; j < size.x; j++)
             {
-                for (var j = 0; j < size.x; j++)
-                {
-                    var noise = noiseGenerator.GetNoise(j, i);
-                    minMaxNoise.x = Mathf.Min(minMaxNoise.x, noise);
-                    minMaxNoise.y = Mathf.Max(minMaxNoise.y, noise);
-                }
+                var noise = noiseGenerator.GetNoise(j, i);
+                minMaxNoise.x = Mathf.Min(minMaxNoise.x, noise);
+                minMaxNoise.y = Mathf.Max(minMaxNoise.y, noise);
             }
 
             return minMaxNoise;

@@ -210,7 +210,7 @@ namespace AleVerDes.Voxels
             mesh.RecalculateNormals();
         }
 
-        private static VertexOffset GetVertexOffset(NoiseGenerator noiseGenerator, Vector3Int blockPosition)
+        private static VertexOffset GetVertexOffset(NoiseProvider noiseGenerator, Vector3Int blockPosition)
         {
             var rtf = GetNoisedVertex(blockPosition + Vector3Int.right + Vector3Int.forward + Vector3Int.up);
             var rtb = GetNoisedVertex(blockPosition + Vector3Int.right + Vector3Int.up);

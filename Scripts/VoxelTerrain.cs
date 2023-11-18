@@ -15,11 +15,11 @@ namespace AleVerDes.Voxels
     public class VoxelTerrain : MonoBehaviour
     {
         [SerializeField] private VoxelTerrainSettings _settings;
-        [SerializeField] private NoiseGenerator _verticesNoise;
+        [SerializeField] private NoiseProvider _verticesNoise;
         [HideInInspector] [SerializeField] private List<ChunkData> _chunks;
 
         public VoxelTerrainSettings Settings => _settings;
-        public NoiseGenerator VerticesNoise => _verticesNoise;
+        public NoiseProvider VerticesNoise => _verticesNoise;
 
         [Button("Create new terrain")]
         public void New()
