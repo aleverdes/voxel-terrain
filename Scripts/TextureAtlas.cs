@@ -28,7 +28,8 @@ namespace AleVerDes.Voxels
         [SerializeField] private float _textureRectScale = 0.99f;
 
         public Vector2 TextureSizeInAtlas => _textureSizeInAtlas;
-        
+        public int Count => _voxelData.Length;
+
 #if UNITY_EDITOR
         [Button("Generate Texture Atlas")]
         public void GenerateTextureAtlas()

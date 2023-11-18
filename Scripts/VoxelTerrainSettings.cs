@@ -22,6 +22,8 @@ namespace AleVerDes.Voxels
         public Vector3Int ChunkSize => _chunkSize;
         public Vector3 BlockSize => _blockSize;
         
+        public Vector3 VerticesNoiseScale => _verticesNoiseScale;
+        
         public Vector3 GetChunkWorldSize()
         {
             return new Vector3(_chunkSize.x * _blockSize.x, _chunkSize.y * _blockSize.y, _chunkSize.z * _blockSize.z);

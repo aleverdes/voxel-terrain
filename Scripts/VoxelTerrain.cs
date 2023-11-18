@@ -4,6 +4,7 @@ using System.IO;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -68,9 +69,11 @@ namespace AleVerDes.Voxels
             chunkAsset.Initialize(_settings.ChunkSize);
             chunk.Data = chunkAsset;
 
-            chunk.Data.GetBlockVoxelIndex(Vector3Int.zero, _settings.ChunkSize) = 1;
-            chunk.Data.GetBlockVoxelIndex(Vector3Int.one, _settings.ChunkSize) = 2;
-            chunk.Data.GetBlockVoxelIndex(Vector3Int.up, _settings.ChunkSize) = 3;
+            for (int x = 0; x < _settings.ChunkSize.x; x++)
+            for (int y = 0; y < _settings.ChunkSize.y; y++)
+            for (int z = 0; z < _settings.ChunkSize.z; z++)
+                if (y <= _settings.ChunkSize.y / 2)
+                    chunk.Data.GetBlockVoxelIndex(new Vector3Int(x, y, z), _settings.ChunkSize) = (byte)Random.Range(1, _settings.TextureAtlas.Count);
 
 #if UNITY_EDITOR
             var assetName = $"Chunk {chunkPosition}";

@@ -67,6 +67,35 @@ namespace AleVerDes.Voxels
                 if (blockVoxel == 0)
                     continue;
 
+                var vertexOffset = GetVertexOffset(verticesNoise, chunkOffset + new Vector3Int(x, y, z));
+                var noiseWeight = GetBlockNoiseWeightIndex(new Vector3Int(x, y, z), chunkSize);
+                var noiseWeightNormalized = noiseWeight / 255f;
+                vertexOffset.RTB *= noiseWeightNormalized; 
+                vertexOffset.RTF *= noiseWeightNormalized;
+                vertexOffset.RBB *= noiseWeightNormalized;
+                vertexOffset.RBF *= noiseWeightNormalized;
+                vertexOffset.LTB *= noiseWeightNormalized;
+                vertexOffset.LTF *= noiseWeightNormalized;
+                vertexOffset.LBB *= noiseWeightNormalized;
+                vertexOffset.LBF *= noiseWeightNormalized;
+                vertexOffset.RTB = new(vertexOffset.RTB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.RTB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.RTB.z * voxelTerrainSettings.VerticesNoiseScale.z);
+                vertexOffset.RTF = new(vertexOffset.RTF.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.RTF.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.RTF.z * voxelTerrainSettings.VerticesNoiseScale.z);
+                vertexOffset.RBB = new(vertexOffset.RBB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.RBB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.RBB.z * voxelTerrainSettings.VerticesNoiseScale.z);
+                vertexOffset.RBF = new(vertexOffset.RBF.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.RBF.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.RBF.z * voxelTerrainSettings.VerticesNoiseScale.z);
+                vertexOffset.LTB = new(vertexOffset.LTB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LTB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LTB.z * voxelTerrainSettings.VerticesNoiseScale.z);
+                vertexOffset.LTF = new(vertexOffset.LTF.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LTF.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LTF.z * voxelTerrainSettings.VerticesNoiseScale.z);
+                vertexOffset.LBB = new(vertexOffset.LBB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LBB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LBB.z * voxelTerrainSettings.VerticesNoiseScale.z);
+                vertexOffset.LBF = new(vertexOffset.LBF.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LBF.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LBF.z * voxelTerrainSettings.VerticesNoiseScale.z);
+
+                var v000 = new Vector3Int(x, y, z) + vertexOffset.LBB;
+                var v001 = new Vector3Int(x, y, z + 1) + vertexOffset.LBF;
+                var v011 = new Vector3Int(x, y + 1, z + 1) + vertexOffset.LTF;
+                var v010 = new Vector3Int(x, y + 1, z) + vertexOffset.LTB;
+                var v100 = new Vector3Int(x + 1, y, z) + vertexOffset.RBB;
+                var v101 = new Vector3Int(x + 1, y, z + 1) + vertexOffset.RBF;
+                var v111 = new Vector3Int(x + 1, y + 1, z + 1) + vertexOffset.RTF;
+                var v110 = new Vector3Int(x + 1, y + 1, z) + vertexOffset.RTB;  
+                
                 var textureData = atlas.GetVoxelTexturesUV(blockVoxel - 1, x + y + z);
                 var uvPositions = new UVPositions
                 {
@@ -75,16 +104,16 @@ namespace AleVerDes.Voxels
                     Side = textureData.Side.WithY(-textureData.Side.y),
                 };
                 var uvSize = atlas.TextureSizeInAtlas;
-                
+
                 var left = chunkOffset + new Vector3Int(x - 1, y, z);
                 if (x > 0 && voxelTerrain.GetBlockVoxelIndex(left, chunkSize) == 0 || x == 0)
                 {
                     vertices.AddRange(new[]
                     {
-                        new Vector3(x, y, z) * blockSize.z,
-                        new Vector3(x, y, z + 1) * blockSize.z,
-                        new Vector3(x, y + 1, z + 1) * blockSize.z,
-                        new Vector3(x, y + 1, z) * blockSize.z,
+                        v000 * blockSize.z,
+                        v001 * blockSize.z,
+                        v011 * blockSize.z,
+                        v010 * blockSize.z,
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -97,10 +126,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        new Vector3(x + 1, y, z + 1) * blockSize.z,
-                        new Vector3(x + 1, y, z) * blockSize.z,
-                        new Vector3(x + 1, y + 1, z) * blockSize.z,
-                        new Vector3(x + 1, y + 1, z + 1) * blockSize.z,
+                        v101 * blockSize.z,
+                        v100 * blockSize.z,
+                        v110 * blockSize.z,
+                        v111 * blockSize.z,
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -113,10 +142,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        new Vector3(x, y + 1, z) * blockSize.y,
-                        new Vector3(x, y + 1, z + 1) * blockSize.y,
-                        new Vector3(x + 1, y + 1, z + 1) * blockSize.y,
-                        new Vector3(x + 1, y + 1, z) * blockSize.y,
+                        v010 * blockSize.y,
+                        v011 * blockSize.y,
+                        v111 * blockSize.y,
+                        v110 * blockSize.y,
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -129,10 +158,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        new Vector3(x, y, z + 1) * blockSize.y,
-                        new Vector3(x, y, z) * blockSize.y,
-                        new Vector3(x + 1, y, z) * blockSize.y,
-                        new Vector3(x + 1, y, z + 1) * blockSize.y,
+                        v001 * blockSize.y,
+                        v000 * blockSize.y,
+                        v100 * blockSize.y,
+                        v101 * blockSize.y,
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -145,10 +174,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        new Vector3(x + 1, y, z) * blockSize.x,
-                        new Vector3(x, y, z) * blockSize.x,
-                        new Vector3(x, y + 1, z) * blockSize.x,
-                        new Vector3(x + 1, y + 1, z) * blockSize.x,
+                        v100 * blockSize.x,
+                        v000 * blockSize.x,
+                        v010 * blockSize.x,
+                        v110 * blockSize.x,
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -161,10 +190,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        new Vector3(x, y, z + 1) * blockSize.x,
-                        new Vector3(x + 1, y, z + 1) * blockSize.x,
-                        new Vector3(x + 1, y + 1, z + 1) * blockSize.x,
-                        new Vector3(x, y + 1, z + 1) * blockSize.x,
+                        v001 * blockSize.x,
+                        v101 * blockSize.x,
+                        v111 * blockSize.x,
+                        v011 * blockSize.x,
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -181,6 +210,39 @@ namespace AleVerDes.Voxels
             mesh.RecalculateNormals();
 
             return mesh;
+        }
+
+        private static VertexOffset GetVertexOffset(NoiseGenerator noiseGenerator, Vector3Int blockPosition)
+        {
+            var rtf = GetNoisedVertex(blockPosition + Vector3Int.right + Vector3Int.forward + Vector3Int.up);
+            var rtb = GetNoisedVertex(blockPosition + Vector3Int.right + Vector3Int.up);
+            var rbf = GetNoisedVertex(blockPosition + Vector3Int.right + Vector3Int.forward);
+            var rbb = GetNoisedVertex(blockPosition + Vector3Int.right);
+            var ltf = GetNoisedVertex(blockPosition + Vector3Int.forward + Vector3Int.up);
+            var lbf = GetNoisedVertex(blockPosition + Vector3Int.forward);
+            var ltb = GetNoisedVertex(blockPosition + Vector3Int.up);
+            var lbb = GetNoisedVertex(blockPosition);
+            return new VertexOffset
+            {
+                RTF = rtf,
+                RTB = rtb,
+                RBB = rbb,
+                RBF = rbf,
+                LTF = ltf,
+                LTB = ltb,
+                LBB = lbb,
+                LBF = lbf,
+            };
+
+            Vector3 GetNoisedVertex(Vector3Int vertexPosition)
+            {
+                return new Vector3
+                {
+                    x = 2f * noiseGenerator.GetNoise(vertexPosition) - 1,
+                    y = 2f * noiseGenerator.GetNoise(vertexPosition + 111f * Vector3.one) - 1,
+                    z = 2f * noiseGenerator.GetNoise(vertexPosition - 111f * Vector3.one) - 1,
+                };
+            }
         }
 
         private static void AddTangents(List<Vector4> tangents)
@@ -254,6 +316,19 @@ namespace AleVerDes.Voxels
             public Vector2 Side;
             public Vector2 Top;
             public Vector2 Bottom;
+        }
+
+        private struct VertexOffset
+        {
+            public Vector3 RTF;
+            public Vector3 RTB;
+            public Vector3 RBF;
+            public Vector3 RBB;
+            
+            public Vector3 LTF;
+            public Vector3 LTB;
+            public Vector3 LBF;
+            public Vector3 LBB;
         }
     }
 }
