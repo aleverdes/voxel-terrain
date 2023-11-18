@@ -52,7 +52,9 @@ namespace AleVerDes.Voxels
             foreach (var chunk in _chunks)
             {
                 DestroyImmediate(chunk.Components.GameObject);
-                DestroyImmediate(chunk.Data);
+#if UNITY_EDITOR
+                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(chunk.Data));
+#endif
                 DestroyImmediate(chunk.Mesh);
             }
             
