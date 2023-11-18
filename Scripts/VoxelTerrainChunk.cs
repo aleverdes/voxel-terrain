@@ -36,7 +36,7 @@ namespace AleVerDes.Voxels
             return ref BlockNoiseWeights[GetBlockIndex(blockPosition, chunkSize)];
         }
 
-        public Mesh UpdateMesh(Mesh mesh, GenerationData generationData)
+        public void UpdateMesh(ref Mesh mesh, GenerationData generationData)
         {
             if (!mesh)
                 mesh = new Mesh();
@@ -87,14 +87,14 @@ namespace AleVerDes.Voxels
                 vertexOffset.LBB = new(vertexOffset.LBB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LBB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LBB.z * voxelTerrainSettings.VerticesNoiseScale.z);
                 vertexOffset.LBF = new(vertexOffset.LBF.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LBF.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LBF.z * voxelTerrainSettings.VerticesNoiseScale.z);
 
-                var v000 = new Vector3Int(x, y, z) + vertexOffset.LBB;
-                var v001 = new Vector3Int(x, y, z + 1) + vertexOffset.LBF;
-                var v011 = new Vector3Int(x, y + 1, z + 1) + vertexOffset.LTF;
-                var v010 = new Vector3Int(x, y + 1, z) + vertexOffset.LTB;
-                var v100 = new Vector3Int(x + 1, y, z) + vertexOffset.RBB;
-                var v101 = new Vector3Int(x + 1, y, z + 1) + vertexOffset.RBF;
-                var v111 = new Vector3Int(x + 1, y + 1, z + 1) + vertexOffset.RTF;
-                var v110 = new Vector3Int(x + 1, y + 1, z) + vertexOffset.RTB;  
+                var v000 = chunkOffset + new Vector3Int(x, y, z) + vertexOffset.LBB;
+                var v001 = chunkOffset + new Vector3Int(x, y, z + 1) + vertexOffset.LBF;
+                var v011 = chunkOffset + new Vector3Int(x, y + 1, z + 1) + vertexOffset.LTF;
+                var v010 = chunkOffset + new Vector3Int(x, y + 1, z) + vertexOffset.LTB;
+                var v100 = chunkOffset + new Vector3Int(x + 1, y, z) + vertexOffset.RBB;
+                var v101 = chunkOffset + new Vector3Int(x + 1, y, z + 1) + vertexOffset.RBF;
+                var v111 = chunkOffset + new Vector3Int(x + 1, y + 1, z + 1) + vertexOffset.RTF;
+                var v110 = chunkOffset + new Vector3Int(x + 1, y + 1, z) + vertexOffset.RTB;  
                 
                 var textureData = atlas.GetVoxelTexturesUV(blockVoxel - 1, x + y + z);
                 var uvPositions = new UVPositions
@@ -106,7 +106,7 @@ namespace AleVerDes.Voxels
                 var uvSize = atlas.TextureSizeInAtlas;
 
                 var left = chunkOffset + new Vector3Int(x - 1, y, z);
-                if (x > 0 && voxelTerrain.GetBlockVoxelIndex(left, chunkSize) == 0 || x == 0)
+                if (x > 0 && !voxelTerrain.IsBlockExists(left) || x == 0)
                 {
                     vertices.AddRange(new[]
                     {
@@ -122,7 +122,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var right = chunkOffset + new Vector3Int(x + 1, y, z);
-                if (x < chunkSize.x - 1 && voxelTerrain.GetBlockVoxelIndex(right, chunkSize) == 0 || x == chunkSize.x - 1)
+                if (x < chunkSize.x - 1 && !voxelTerrain.IsBlockExists(right) || x == chunkSize.x - 1)
                 {
                     vertices.AddRange(new[]
                     {
@@ -138,7 +138,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var top = chunkOffset + new Vector3Int(x, y + 1, z);
-                if (y < chunkSize.y - 1 && voxelTerrain.GetBlockVoxelIndex(top, chunkSize) == 0 || y == chunkSize.y - 1)
+                if (y < chunkSize.y - 1 && !voxelTerrain.IsBlockExists(top) || y == chunkSize.y - 1)
                 {
                     vertices.AddRange(new[]
                     {
@@ -154,7 +154,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var bottom = chunkOffset + new Vector3Int(x, y - 1, z);
-                if (y > 0 && voxelTerrain.GetBlockVoxelIndex(bottom, chunkSize) == 0 || y == 0)
+                if (y > 0 && !voxelTerrain.IsBlockExists(bottom) || y == 0)
                 {
                     vertices.AddRange(new[]
                     {
@@ -170,7 +170,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var back = chunkOffset + new Vector3Int(x, y, z - 1);
-                if (z > 0 && voxelTerrain.GetBlockVoxelIndex(back, chunkSize) == 0 || z == 0)
+                if (z > 0 && !voxelTerrain.IsBlockExists(back) || z == 0)
                 {
                     vertices.AddRange(new[]
                     {
@@ -186,7 +186,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var front = chunkOffset + new Vector3Int(x, y, z + 1);
-                if (z < chunkSize.z - 1 && voxelTerrain.GetBlockVoxelIndex(front, chunkSize) == 0 || z == chunkSize.z - 1)
+                if (z < chunkSize.z - 1 && !voxelTerrain.IsBlockExists(front) || z == chunkSize.z - 1)
                 {
                     vertices.AddRange(new[]
                     {
@@ -208,8 +208,6 @@ namespace AleVerDes.Voxels
             mesh.triangles = triangles.ToArray();
             
             mesh.RecalculateNormals();
-
-            return mesh;
         }
 
         private static VertexOffset GetVertexOffset(NoiseGenerator noiseGenerator, Vector3Int blockPosition)
