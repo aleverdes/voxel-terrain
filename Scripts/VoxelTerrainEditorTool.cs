@@ -1,6 +1,6 @@
-namespace AleVerDes.VoxelTerrain
+namespace AleVerDes.Voxels
 {
-    public enum WorldTool
+    public enum VoxelTerrainEditorTool
     {
         None,
         CellRestoring,
