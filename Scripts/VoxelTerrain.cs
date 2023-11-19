@@ -12,12 +12,20 @@ using UnityEditor;
 
 namespace AleVerDes.Voxels
 {
+    [SelectionBase]
+    [DisallowMultipleComponent]
     public class VoxelTerrain : MonoBehaviour
     {
         [SerializeField] private VoxelTerrainSettings _settings;
         [SerializeField] private NoiseProvider _verticesNoise;
         [HideInInspector] [SerializeField] private List<ChunkData> _chunks;
-
+        
+        [HideInInspector] public VoxelTerrainEditorTool SelectedEditorTool;
+        [HideInInspector] public float PaintingBrushRadius = 1f;
+        [HideInInspector] public float NoiseWeightBrushRadius = 1f;
+        [HideInInspector] public float NoiseWeightBrushStrength = 1f;
+        [HideInInspector] public Voxel SelectedPaintingVoxel;
+        
         public VoxelTerrainSettings Settings => _settings;
         public NoiseProvider VerticesNoise => _verticesNoise;
 
@@ -133,6 +141,21 @@ namespace AleVerDes.Voxels
                     ChunkPosition = chunkPosition,
                     VoxelTerrain = this
                 });
+                chunk.Components.MeshCollider.sharedMesh = chunk.Mesh;
+            }
+        }
+
+        public void UpdateChunks(IEnumerable<int> chunks)
+        {
+            foreach (var chunkIndex in chunks)
+            {
+                var chunk = _chunks[chunkIndex];
+                chunk.Data.UpdateMesh(ref chunk.Mesh, new VoxelTerrainChunk.GenerationData
+                {
+                    ChunkPosition = chunk.Position,
+                    VoxelTerrain = this
+                });
+                chunk.Components.MeshCollider.sharedMesh = chunk.Mesh;
             }
         }
 
@@ -169,6 +192,14 @@ namespace AleVerDes.Voxels
                 return false;
             return GetBlockVoxelIndex(blockPosition) > 0;
         }
+
+        public bool IsBlockInChunks(Vector3Int blockPosition)
+        {
+            var chunkIndex = GetChunkIndex(blockPosition);
+            if (chunkIndex < 0 || chunkIndex >= _chunks.Count)
+                return false;
+            return true;
+        }
         
         public ref byte GetBlockVoxelIndex(Vector3Int blockPosition)
         {
@@ -180,7 +211,7 @@ namespace AleVerDes.Voxels
             return ref chunk.Data.GetBlockVoxelIndex(blockPositionInChunk, chunkSize);
         }
         
-        public ref byte GetBlockNoiseWeightIndex(Vector3Int blockPosition)
+        public ref byte GetBlockNoiseWeight(Vector3Int blockPosition)
         {
             var chunkSize = _settings.ChunkSize;
             var chunkIndex = GetChunkIndex(blockPosition);

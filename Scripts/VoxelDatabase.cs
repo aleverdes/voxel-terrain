@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AleVerDes.Voxels
 {
-    [CreateAssetMenu(menuName = "Voxels/Voxel Database", fileName = "Voxel Database")]
+    [CreateAssetMenu(menuName = "Voxels/Voxel Database", fileName = "Voxel Database", order = 11)]
     public class VoxelDatabase : ScriptableObject
     {
         [SerializeField] private List<Voxel> _voxels;

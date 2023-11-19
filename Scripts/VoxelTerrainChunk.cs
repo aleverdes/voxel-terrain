@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace AleVerDes.Voxels
 {
-    [CreateAssetMenu(fileName = "Voxel Terrain Chunk", menuName = "Voxels/Terrain Chunk")]
     public class VoxelTerrainChunk : ScriptableObject
     {
         [HideInInspector] public byte[] BlockVoxels;
@@ -67,7 +66,7 @@ namespace AleVerDes.Voxels
                 if (blockVoxel == 0)
                     continue;
 
-                var vertexOffset = GetVertexOffset(verticesNoise, chunkOffset + new Vector3Int(x, y, z));
+                var vertexOffset = GetVertexOffset(verticesNoise, chunkOffset + new Vector3Int(x, y, z), blockSize);
                 var noiseWeight = GetBlockNoiseWeightIndex(new Vector3Int(x, y, z), chunkSize);
                 var noiseWeightNormalized = noiseWeight / 255f;
                 vertexOffset.RTB *= noiseWeightNormalized; 
@@ -87,14 +86,14 @@ namespace AleVerDes.Voxels
                 vertexOffset.LBB = new(vertexOffset.LBB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LBB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LBB.z * voxelTerrainSettings.VerticesNoiseScale.z);
                 vertexOffset.LBF = new(vertexOffset.LBF.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.LBF.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.LBF.z * voxelTerrainSettings.VerticesNoiseScale.z);
 
-                var v000 = chunkOffset + new Vector3Int(x, y, z) + vertexOffset.LBB;
-                var v001 = chunkOffset + new Vector3Int(x, y, z + 1) + vertexOffset.LBF;
-                var v011 = chunkOffset + new Vector3Int(x, y + 1, z + 1) + vertexOffset.LTF;
-                var v010 = chunkOffset + new Vector3Int(x, y + 1, z) + vertexOffset.LTB;
-                var v100 = chunkOffset + new Vector3Int(x + 1, y, z) + vertexOffset.RBB;
-                var v101 = chunkOffset + new Vector3Int(x + 1, y, z + 1) + vertexOffset.RBF;
-                var v111 = chunkOffset + new Vector3Int(x + 1, y + 1, z + 1) + vertexOffset.RTF;
-                var v110 = chunkOffset + new Vector3Int(x + 1, y + 1, z) + vertexOffset.RTB;  
+                var v000 = chunkOffset + new Vector3(x, y, z) + vertexOffset.LBB;
+                var v001 = chunkOffset + new Vector3(x, y, z + 1) + vertexOffset.LBF;
+                var v011 = chunkOffset + new Vector3(x, y + 1, z + 1) + vertexOffset.LTF;
+                var v010 = chunkOffset + new Vector3(x, y + 1, z) + vertexOffset.LTB;
+                var v100 = chunkOffset + new Vector3(x + 1, y, z) + vertexOffset.RBB;
+                var v101 = chunkOffset + new Vector3(x + 1, y, z + 1) + vertexOffset.RBF;
+                var v111 = chunkOffset + new Vector3(x + 1, y + 1, z + 1) + vertexOffset.RTF;
+                var v110 = chunkOffset + new Vector3(x + 1, y + 1, z) + vertexOffset.RTB;  
                 
                 var textureData = atlas.GetVoxelTexturesUV(blockVoxel - 1, x + y + z);
                 var uvPositions = new UVPositions
@@ -110,10 +109,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        v000 * blockSize.z,
-                        v001 * blockSize.z,
-                        v011 * blockSize.z,
-                        v010 * blockSize.z,
+                        Mul(v000, blockSize),
+                        Mul(v001, blockSize),
+                        Mul(v011, blockSize),
+                        Mul(v010, blockSize),
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -126,10 +125,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        v101 * blockSize.z,
-                        v100 * blockSize.z,
-                        v110 * blockSize.z,
-                        v111 * blockSize.z,
+                        Mul(v101, blockSize),
+                        Mul(v100, blockSize),
+                        Mul(v110, blockSize),
+                        Mul(v111, blockSize),
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -142,10 +141,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        v010 * blockSize.y,
-                        v011 * blockSize.y,
-                        v111 * blockSize.y,
-                        v110 * blockSize.y,
+                        Mul(v010, blockSize),
+                        Mul(v011, blockSize),
+                        Mul(v111, blockSize),
+                        Mul(v110, blockSize),
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -158,10 +157,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        v001 * blockSize.y,
-                        v000 * blockSize.y,
-                        v100 * blockSize.y,
-                        v101 * blockSize.y,
+                        Mul(v001, blockSize),
+                        Mul(v000, blockSize),
+                        Mul(v100, blockSize),
+                        Mul(v101, blockSize),
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -174,10 +173,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        v100 * blockSize.x,
-                        v000 * blockSize.x,
-                        v010 * blockSize.x,
-                        v110 * blockSize.x,
+                        Mul(v100, blockSize),
+                        Mul(v000, blockSize),
+                        Mul(v010, blockSize),
+                        Mul(v110, blockSize),
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -190,10 +189,10 @@ namespace AleVerDes.Voxels
                 {
                     vertices.AddRange(new[]
                     {
-                        v001 * blockSize.x,
-                        v101 * blockSize.x,
-                        v111 * blockSize.x,
-                        v011 * blockSize.x,
+                        Mul(v001, blockSize),
+                        Mul(v101, blockSize),
+                        Mul(v111, blockSize),
+                        Mul(v011, blockSize),
                     });
 
                     AddTriangles(triangles, ref trianglesCount);
@@ -210,7 +209,7 @@ namespace AleVerDes.Voxels
             mesh.RecalculateNormals();
         }
 
-        private static VertexOffset GetVertexOffset(NoiseProvider noiseGenerator, Vector3Int blockPosition)
+        private static VertexOffset GetVertexOffset(NoiseProvider noiseGenerator, Vector3Int blockPosition, Vector3 blockSize)
         {
             var rtf = GetNoisedVertex(blockPosition + Vector3Int.right + Vector3Int.forward + Vector3Int.up);
             var rtb = GetNoisedVertex(blockPosition + Vector3Int.right + Vector3Int.up);
@@ -236,9 +235,9 @@ namespace AleVerDes.Voxels
             {
                 return new Vector3
                 {
-                    x = 2f * noiseGenerator.GetNoise(vertexPosition) - 1,
-                    y = 2f * noiseGenerator.GetNoise(vertexPosition + 111f * Vector3.one) - 1,
-                    z = 2f * noiseGenerator.GetNoise(vertexPosition - 111f * Vector3.one) - 1,
+                    x = 2f * noiseGenerator.GetNoise(Mul(vertexPosition, blockSize)) - 1,
+                    y = 2f * noiseGenerator.GetNoise(Mul(vertexPosition, blockSize) + 111f * Vector3.one) - 1,
+                    z = 2f * noiseGenerator.GetNoise(Mul(vertexPosition, blockSize) - 111f * Vector3.one) - 1,
                 };
             }
         }
@@ -301,6 +300,11 @@ namespace AleVerDes.Voxels
                     });
                     break;
             }
+        }
+
+        private static Vector3 Mul(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
         }
 
         public struct GenerationData

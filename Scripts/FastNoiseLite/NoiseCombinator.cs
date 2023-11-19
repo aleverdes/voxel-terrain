@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AleVerDes.Voxels
 {
-    [CreateAssetMenu(menuName = "Voxels/Noise Combinator", fileName = "Noise Combinator")]
+    [CreateAssetMenu(menuName = "Voxels/Noise/Noise Combinator", fileName = "Noise Combinator")]
     public class NoiseCombinator : NoiseProvider
     {
         [SerializeField] private Noise[] _noises;

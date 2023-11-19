@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AleVerDes.Voxels
 {
-    [CreateAssetMenu(menuName = "Voxels/Noise", fileName = "Noise")]
+    [CreateAssetMenu(menuName = "Voxels/Noise/Noise Generator", fileName = "Noise Generator")]
     public class NoiseGenerator : NoiseProvider
     {
         public int Seed = 1337;

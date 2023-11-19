@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AleVerDes.Voxels
 {
-    [CreateAssetMenu(menuName = "Voxels/Voxel", fileName = "Voxel")]
+    [CreateAssetMenu(menuName = "Voxels/Voxel", fileName = "Voxel", order = 10)]
     public class Voxel : ScriptableObject
     {
         [SerializeField] private Variant[] _variants;

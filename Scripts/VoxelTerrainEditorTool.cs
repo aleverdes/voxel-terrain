@@ -3,10 +3,8 @@ namespace AleVerDes.Voxels
     public enum VoxelTerrainEditorTool
     {
         None,
-        CellRestoring,
-        CellDeleting,
-        Selection,
+        SetBlock,
         Painting,
-        Height,
+        NoiseWeight,
     }
 }

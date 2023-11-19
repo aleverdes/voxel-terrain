@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace AleVerDes.Voxels
 {
-    [CreateAssetMenu(menuName = "Voxels/Texture Atlas", fileName = "Texture Atlas")]
+    [CreateAssetMenu(menuName = "Voxels/Texture Atlas", fileName = "Texture Atlas", order = 20)]
     public class TextureAtlas : ScriptableObject
     {
         private static int[] _atlasSizes = { 64, 128, 256, 512, 1024, 2048, 4096 };
@@ -27,6 +27,7 @@ namespace AleVerDes.Voxels
         [SerializeField] private Vector2 _textureSizeInAtlas;
         [SerializeField] private float _textureRectScale = 0.99f;
 
+        public VoxelDatabase VoxelDatabase => _voxelDatabase;
         public Vector2 TextureSizeInAtlas => _textureSizeInAtlas;
         public int Count => _voxelData.Length;
 

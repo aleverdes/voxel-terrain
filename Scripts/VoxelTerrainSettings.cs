@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AleVerDes.Voxels
 {
-    [CreateAssetMenu(menuName = "Voxels/Terrain Settings", fileName = "Voxel Terrain Settings")]
+    [CreateAssetMenu(menuName = "Voxels/Terrain Settings", fileName = "Voxel Terrain Settings", order = 30)]
     public class VoxelTerrainSettings : ScriptableObject
     {
         [Header("Textures")]
