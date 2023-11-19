@@ -23,7 +23,7 @@ namespace AleVerDes.Voxels
         [HideInInspector] public VoxelTerrainEditorTool SelectedEditorTool;
         [HideInInspector] public float PaintingBrushRadius = 1f;
         [HideInInspector] public float NoiseWeightBrushRadius = 1f;
-        [HideInInspector] public float NoiseWeightBrushStrength = 1f;
+        [Range(0, 255f)] [HideInInspector] public float NoiseWeightBrushStrength = 1f;
         [HideInInspector] public Voxel SelectedPaintingVoxel;
         
         public VoxelTerrainSettings Settings => _settings;
@@ -59,11 +59,14 @@ namespace AleVerDes.Voxels
         {
             foreach (var chunk in _chunks)
             {
-                DestroyImmediate(chunk.Components.GameObject);
+                if (chunk.Components.GameObject != null)
+                    DestroyImmediate(chunk.Components.GameObject);
 #if UNITY_EDITOR
-                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(chunk.Data));
+                if (chunk.Data != null)
+                    AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(chunk.Data));
+                if (chunk.Mesh != null)
+                    AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(chunk.Mesh));
 #endif
-                DestroyImmediate(chunk.Mesh);
             }
             
             _chunks.Clear();
@@ -126,6 +129,7 @@ namespace AleVerDes.Voxels
         }
 
         [Button("Update chunks")]
+        [ContextMenu("Update chunks")]
         public void UpdateChunks()
         {
             UpdateChunks(_chunks.ConvertAll(x => x.Position));
@@ -145,9 +149,11 @@ namespace AleVerDes.Voxels
 #if UNITY_EDITOR
                 var assetName = $"Chunk {chunk.Position} Mesh";
                 var path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/Chunks/" + assetName + ".asset";
-                MeshUtility.Optimize(chunk.Mesh);
-                AssetDatabase.CreateAsset(chunk.Mesh, path);
-                AssetDatabase.SaveAssets();
+                if (!File.Exists(path))
+                {
+                    AssetDatabase.CreateAsset(chunk.Mesh, path);
+                    AssetDatabase.SaveAssets();
+                }
 #endif
             }
         }
@@ -163,12 +169,15 @@ namespace AleVerDes.Voxels
                     VoxelTerrain = this
                 });
                 chunk.Components.MeshCollider.sharedMesh = chunk.Mesh;
+                chunk.Components.MeshFilter.sharedMesh = chunk.Mesh;
 #if UNITY_EDITOR
                 var assetName = $"Chunk {chunk.Position} Mesh";
                 var path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/Chunks/" + assetName + ".asset";
-                MeshUtility.Optimize(chunk.Mesh);
-                AssetDatabase.CreateAsset(chunk.Mesh, path);
-                AssetDatabase.SaveAssets();
+                if (!File.Exists(path))
+                {
+                    AssetDatabase.CreateAsset(chunk.Mesh, path);
+                    AssetDatabase.SaveAssets();
+                }
 #endif
             }
         }
@@ -234,7 +243,7 @@ namespace AleVerDes.Voxels
             var blockPositionInChunk = blockPosition - chunkPosition * chunkSize;
             return ref chunk.Data.GetBlockNoiseWeightIndex(blockPositionInChunk, chunkSize);
         }
-        
+
         public int GetChunkIndex(Vector3Int blockPosition)
         {
             var chunkSize = _settings.ChunkSize;

@@ -66,17 +66,38 @@ namespace AleVerDes.Voxels
                 if (blockVoxel == 0)
                     continue;
 
+                float GetNoiseWeight(Vector3Int blockPosition, Vector3Int delta)
+                {
+                    var noiseWeight = GetNoiseWeightForBlock(blockPosition);
+                    noiseWeight = Mathf.Min(noiseWeight, GetNoiseWeightForBlock(blockPosition + new Vector3Int(delta.x, delta.y, delta.z)));
+                    noiseWeight = Mathf.Min(noiseWeight, GetNoiseWeightForBlock(blockPosition + new Vector3Int(0, delta.y, 0)));
+                    noiseWeight = Mathf.Min(noiseWeight, GetNoiseWeightForBlock(blockPosition + new Vector3Int(0, 0, delta.z)));
+                    noiseWeight = Mathf.Min(noiseWeight, GetNoiseWeightForBlock(blockPosition + new Vector3Int(delta.x, delta.y, 0)));
+                    noiseWeight = Mathf.Min(noiseWeight, GetNoiseWeightForBlock(blockPosition + new Vector3Int(delta.x, 0, delta.z)));
+                    noiseWeight = Mathf.Min(noiseWeight, GetNoiseWeightForBlock(blockPosition + new Vector3Int(delta.x, 0, 0)));
+                        
+                    return noiseWeight;
+
+                    float GetNoiseWeightForBlock(Vector3Int bp)
+                    {
+                        return generationData.VoxelTerrain.IsBlockExistsInChunks(chunkOffset + bp)
+                            ? generationData.VoxelTerrain.GetBlockNoiseWeight(chunkOffset + bp) / 255f
+                            : 1f;
+                    }
+                }
+                
                 var vertexOffset = GetVertexOffset(verticesNoise, chunkOffset + new Vector3Int(x, y, z), blockSize);
-                var noiseWeight = GetBlockNoiseWeightIndex(new Vector3Int(x, y, z), chunkSize);
-                var noiseWeightNormalized = noiseWeight / 255f;
-                vertexOffset.RTB *= noiseWeightNormalized; 
-                vertexOffset.RTF *= noiseWeightNormalized;
-                vertexOffset.RBB *= noiseWeightNormalized;
-                vertexOffset.RBF *= noiseWeightNormalized;
-                vertexOffset.LTB *= noiseWeightNormalized;
-                vertexOffset.LTF *= noiseWeightNormalized;
-                vertexOffset.LBB *= noiseWeightNormalized;
-                vertexOffset.LBF *= noiseWeightNormalized;
+                var position = new Vector3Int(x, y, z);
+                
+                vertexOffset.RTB *= GetNoiseWeight(position, new Vector3Int(1, 1, -1)); 
+                vertexOffset.RTF *= GetNoiseWeight(position, new Vector3Int(1, 1, 1));
+                vertexOffset.RBB *= GetNoiseWeight(position, new Vector3Int(1, -1, -1));
+                vertexOffset.RBF *= GetNoiseWeight(position, new Vector3Int(1, -1, 1));
+                vertexOffset.LTB *= GetNoiseWeight(position, new Vector3Int(-1, 1, -1));
+                vertexOffset.LTF *= GetNoiseWeight(position, new Vector3Int(-1, 1, 1));
+                vertexOffset.LBB *= GetNoiseWeight(position, new Vector3Int(-1, -1, -1));
+                vertexOffset.LBF *= GetNoiseWeight(position, new Vector3Int(-1, -1, 1));
+
                 vertexOffset.RTB = new(vertexOffset.RTB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.RTB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.RTB.z * voxelTerrainSettings.VerticesNoiseScale.z);
                 vertexOffset.RTF = new(vertexOffset.RTF.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.RTF.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.RTF.z * voxelTerrainSettings.VerticesNoiseScale.z);
                 vertexOffset.RBB = new(vertexOffset.RBB.x * voxelTerrainSettings.VerticesNoiseScale.x, vertexOffset.RBB.y * voxelTerrainSettings.VerticesNoiseScale.y, vertexOffset.RBB.z * voxelTerrainSettings.VerticesNoiseScale.z);
@@ -137,7 +158,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var top = chunkOffset + new Vector3Int(x, y + 1, z);
-                if (!voxelTerrain.IsSolidBlock(top) && voxelTerrain.IsBlockExistsInChunks(top))
+                if (!voxelTerrain.IsSolidBlock(top))
                 {
                     vertices.AddRange(new[]
                     {

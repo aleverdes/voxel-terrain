@@ -39,8 +39,8 @@ namespace AleVerDes.Voxels
 
         private bool _initialized;
 
-        private VoxelTerrainEditorTool Tool => VoxelTerrain.SelectedEditorTool;
-        private Voxel SelectedPaintingVoxel => VoxelTerrain.SelectedPaintingVoxel;
+        private VoxelTerrainEditorTool Tool => VoxelTerrain ? VoxelTerrain.SelectedEditorTool : VoxelTerrainEditorTool.None;
+        private Voxel SelectedPaintingVoxel => VoxelTerrain ? VoxelTerrain.SelectedPaintingVoxel : null;
 
         private void Initialize()
         {
@@ -102,11 +102,19 @@ namespace AleVerDes.Voxels
             
             EditorGUILayout.Separator();
 
-            if (Tool == VoxelTerrainEditorTool.Painting)
-                InspectorPainting();
+            if (Tool is VoxelTerrainEditorTool.Painting or VoxelTerrainEditorTool.SetBlock)
+                DrawVoxelsDatabase();
+
+            if (Tool is VoxelTerrainEditorTool.NoiseWeight)
+            {
+                EditorGUI.BeginChangeCheck();
+                _noiseWeightBrushStrengthProperty.floatValue = EditorGUILayout.Slider("Noise Strength", _noiseWeightBrushStrengthProperty.floatValue, 0f, 255f);
+                if (EditorGUI.EndChangeCheck())
+                    serializedObject.ApplyModifiedProperties();
+            }
         }
 
-        private void InspectorPainting()
+        private void DrawVoxelsDatabase()
         {
             if (!VoxelTerrain)
             {
@@ -157,6 +165,8 @@ namespace AleVerDes.Voxels
 
         private void OnScene(SceneView sceneView)
         {
+            Initialize();
+            
             if (Tool == VoxelTerrainEditorTool.None)
                 return;
 
@@ -187,8 +197,19 @@ namespace AleVerDes.Voxels
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            
+
+            DrawHoveredBlocks();
             ProcessEvents();
+        }
+
+        private void DrawHoveredBlocks()
+        {
+            foreach (var hoveredBlock in _hoveredBlocks)
+            {
+                var blockWorldPosition = GetBlockWorldPosition(hoveredBlock);
+                var blockBounds = new Bounds(blockWorldPosition + 0.5f * VoxelTerrain.Settings.BlockSize, VoxelTerrain.Settings.BlockSize);
+                Handles.DrawWireCube(blockBounds.center, blockBounds.size);
+            }
         }
 
         private void UpdateMouseWorldPosition()
@@ -220,6 +241,8 @@ namespace AleVerDes.Voxels
             var toAdd = new List<Vector3Int>();
             
             var hoveredBlockPosition = GetBlockByWorldPosition(worldPosition);
+            if (VoxelTerrain.GetBlockVoxelIndex(hoveredBlockPosition) == 0)
+                hoveredBlockPosition -= Vector3Int.up;
             hoveredBlocks.Add(hoveredBlockPosition);
             processed.Add(hoveredBlockPosition);
             
@@ -238,7 +261,7 @@ namespace AleVerDes.Voxels
                         continue;
                     
                     var blockWorldPosition = GetBlockWorldPosition(processingBlock);
-                    var distance = Vector3.Distance(new Vector3(worldPosition.x, 0f, worldPosition.z), blockWorldPosition + 0.5f * VoxelTerrain.Settings.BlockSize);
+                    var distance = Vector3.Distance(worldPosition, blockWorldPosition + 0.5f * VoxelTerrain.Settings.BlockSize);
                     if (distance <= radius)
                     {
                         hoveredBlocks.Add(processingBlock);
@@ -317,6 +340,11 @@ namespace AleVerDes.Voxels
 
             if (_leftMouseButtonIsPressed)
             {
+                if (Tool == VoxelTerrainEditorTool.SetBlock)
+                {
+                    
+                }
+                
                 if (Tool == VoxelTerrainEditorTool.Painting)
                 {
                     var chunks = new HashSet<int>();
@@ -324,7 +352,8 @@ namespace AleVerDes.Voxels
                     foreach (var hoveredBlock in _hoveredBlocks)
                     {
                         ref var blockVoxelIndex = ref VoxelTerrain.GetBlockVoxelIndex(hoveredBlock);
-                        blockVoxelIndex = (byte) (VoxelTerrain.Settings.TextureAtlas.VoxelDatabase.IndexOf(SelectedPaintingVoxel) + 1);
+                        if (blockVoxelIndex > 0)
+                            blockVoxelIndex = (byte) (VoxelTerrain.Settings.TextureAtlas.VoxelDatabase.IndexOf(SelectedPaintingVoxel) + 1);
                         chunks.Add(VoxelTerrain.GetChunkIndex(hoveredBlock));
                     }
                     
@@ -335,12 +364,15 @@ namespace AleVerDes.Voxels
                 if (Tool == VoxelTerrainEditorTool.NoiseWeight)
                 {
                     var dt = _noiseWeightBrushStrengthProperty.floatValue * (!modeShiftKey).ToSign() * _editorDeltaTime;
+                    if (Mathf.Abs(dt) < 1)
+                        dt = Mathf.Sign(dt);
+                    
                     var chunks = new HashSet<int>();
                     
                     foreach (var hoveredBlock in _hoveredBlocks)
                     {
                         ref var blockNoiseWeight = ref VoxelTerrain.GetBlockNoiseWeight(hoveredBlock);
-                        blockNoiseWeight = (byte) Mathf.Clamp(blockNoiseWeight + Mathf.Min(dt, 1f), byte.MinValue, byte.MaxValue);
+                        blockNoiseWeight = (byte) Mathf.Clamp(blockNoiseWeight + dt, byte.MinValue, byte.MaxValue);
                         chunks.Add(VoxelTerrain.GetChunkIndex(hoveredBlock));
                     }
                     
@@ -352,37 +384,34 @@ namespace AleVerDes.Voxels
             
             if (Tool == VoxelTerrainEditorTool.NoiseWeight)
             {
-                if (modeShiftKey)
+                if (_pressedKeys.Contains(KeyCode.UpArrow))
                 {
-                    if (_pressedKeys.Contains(KeyCode.UpArrow))
-                    {
-                        _noiseWeightBrushStrengthProperty.floatValue
-                            = Mathf.Clamp(0, _noiseWeightBrushStrengthProperty.floatValue + 20f * _editorDeltaTime, 255f);
-                        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                    }
-                    else if (_pressedKeys.Contains(KeyCode.DownArrow))
-                    {
-                        _noiseWeightBrushStrengthProperty.floatValue
-                            = Mathf.Clamp(0, _noiseWeightBrushStrengthProperty.floatValue - 20f * _editorDeltaTime, 255f);
-                        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                    }
+                    _noiseWeightBrushStrengthProperty.floatValue
+                        = Mathf.Clamp(_noiseWeightBrushStrengthProperty.floatValue + 20f * _editorDeltaTime, 0, 255f);
+                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
-                else
+
+                if (_pressedKeys.Contains(KeyCode.DownArrow))
                 {
-                    if (_pressedKeys.Contains(KeyCode.RightBracket))
-                    {
-                        var chunkSize = Mathf.Max(VoxelTerrain.Settings.ChunkSize.x, VoxelTerrain.Settings.ChunkSize.z);
-                        _noiseWeightBrushRadiusProperty.floatValue
-                            = Mathf.Min(_noiseWeightBrushRadiusProperty.floatValue + 2f * _editorDeltaTime, 0.66f * chunkSize);
-                        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                    }
-                    else if (_pressedKeys.Contains(KeyCode.LeftBracket))
-                    {
-                        var blockSize = Mathf.Max(VoxelTerrain.Settings.BlockSize.x, VoxelTerrain.Settings.BlockSize.y, VoxelTerrain.Settings.BlockSize.z);
-                        _noiseWeightBrushRadiusProperty.floatValue
-                            = Mathf.Max(_noiseWeightBrushRadiusProperty.floatValue - 2f * _editorDeltaTime, 0.33f * blockSize);
-                        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                    }   
+                    _noiseWeightBrushStrengthProperty.floatValue
+                        = Mathf.Clamp(_noiseWeightBrushStrengthProperty.floatValue - 20f * _editorDeltaTime, 0, 255f);
+                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                if (_pressedKeys.Contains(KeyCode.RightBracket))
+                {
+                    var chunkSize = Mathf.Max(VoxelTerrain.Settings.ChunkSize.x, VoxelTerrain.Settings.ChunkSize.z);
+                    _noiseWeightBrushRadiusProperty.floatValue
+                        = Mathf.Min(_noiseWeightBrushRadiusProperty.floatValue + 2f * _editorDeltaTime, 0.66f * chunkSize);
+                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                }
+                
+                if (_pressedKeys.Contains(KeyCode.LeftBracket))
+                {
+                    var blockSize = Mathf.Max(VoxelTerrain.Settings.BlockSize.x, VoxelTerrain.Settings.BlockSize.y, VoxelTerrain.Settings.BlockSize.z);
+                    _noiseWeightBrushRadiusProperty.floatValue
+                        = Mathf.Max(_noiseWeightBrushRadiusProperty.floatValue - 2f * _editorDeltaTime, 0.33f * blockSize);
+                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
             }
             
@@ -395,7 +424,8 @@ namespace AleVerDes.Voxels
                         = Mathf.Min(_paintingBrushRadiusProperty.floatValue + 2f * _editorDeltaTime, 0.66f * chunkSize);
                     serializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
-                else if (_pressedKeys.Contains(KeyCode.LeftBracket))
+                
+                if (_pressedKeys.Contains(KeyCode.LeftBracket))
                 {
                     var blockSize = Mathf.Max(VoxelTerrain.Settings.BlockSize.x, VoxelTerrain.Settings.BlockSize.y, VoxelTerrain.Settings.BlockSize.z);
                     _paintingBrushRadiusProperty.floatValue
