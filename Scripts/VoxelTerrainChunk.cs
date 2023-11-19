@@ -105,7 +105,7 @@ namespace AleVerDes.Voxels
                 var uvSize = atlas.TextureSizeInAtlas;
 
                 var left = chunkOffset + new Vector3Int(x - 1, y, z);
-                if (x > 0 && !voxelTerrain.IsBlockExists(left) || x == 0)
+                if (!voxelTerrain.IsSolidBlock(left) && voxelTerrain.IsBlockExistsInChunks(left))
                 {
                     vertices.AddRange(new[]
                     {
@@ -121,7 +121,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var right = chunkOffset + new Vector3Int(x + 1, y, z);
-                if (x < chunkSize.x - 1 && !voxelTerrain.IsBlockExists(right) || x == chunkSize.x - 1)
+                if (!voxelTerrain.IsSolidBlock(right) && voxelTerrain.IsBlockExistsInChunks(right))
                 {
                     vertices.AddRange(new[]
                     {
@@ -137,7 +137,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var top = chunkOffset + new Vector3Int(x, y + 1, z);
-                if (y < chunkSize.y - 1 && !voxelTerrain.IsBlockExists(top) || y == chunkSize.y - 1)
+                if (!voxelTerrain.IsSolidBlock(top) && voxelTerrain.IsBlockExistsInChunks(top))
                 {
                     vertices.AddRange(new[]
                     {
@@ -153,7 +153,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var bottom = chunkOffset + new Vector3Int(x, y - 1, z);
-                if (y > 0 && !voxelTerrain.IsBlockExists(bottom) || y == 0)
+                if (!voxelTerrain.IsSolidBlock(bottom) && voxelTerrain.IsBlockExistsInChunks(bottom))
                 {
                     vertices.AddRange(new[]
                     {
@@ -169,7 +169,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var back = chunkOffset + new Vector3Int(x, y, z - 1);
-                if (z > 0 && !voxelTerrain.IsBlockExists(back) || z == 0)
+                if (!voxelTerrain.IsSolidBlock(back) && voxelTerrain.IsBlockExistsInChunks(back))
                 {
                     vertices.AddRange(new[]
                     {
@@ -185,7 +185,7 @@ namespace AleVerDes.Voxels
                 }
 
                 var front = chunkOffset + new Vector3Int(x, y, z + 1);
-                if (z < chunkSize.z - 1 && !voxelTerrain.IsBlockExists(front) || z == chunkSize.z - 1)
+                if (!voxelTerrain.IsSolidBlock(front) && voxelTerrain.IsBlockExistsInChunks(front))
                 {
                     vertices.AddRange(new[]
                     {

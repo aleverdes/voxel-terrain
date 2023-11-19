@@ -234,7 +234,7 @@ namespace AleVerDes.Voxels
                     if (!processed.Add(processingBlock))
                         continue;
                     
-                    if (!VoxelTerrain.IsBlockInChunks(processingBlock))
+                    if (!VoxelTerrain.IsBlockExistsInChunks(processingBlock))
                         continue;
                     
                     var blockWorldPosition = GetBlockWorldPosition(processingBlock);

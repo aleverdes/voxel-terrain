@@ -142,6 +142,13 @@ namespace AleVerDes.Voxels
                     VoxelTerrain = this
                 });
                 chunk.Components.MeshCollider.sharedMesh = chunk.Mesh;
+#if UNITY_EDITOR
+                var assetName = $"Chunk {chunk.Position} Mesh";
+                var path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/Chunks/" + assetName + ".asset";
+                MeshUtility.Optimize(chunk.Mesh);
+                AssetDatabase.CreateAsset(chunk.Mesh, path);
+                AssetDatabase.SaveAssets();
+#endif
             }
         }
 
@@ -156,6 +163,13 @@ namespace AleVerDes.Voxels
                     VoxelTerrain = this
                 });
                 chunk.Components.MeshCollider.sharedMesh = chunk.Mesh;
+#if UNITY_EDITOR
+                var assetName = $"Chunk {chunk.Position} Mesh";
+                var path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/Chunks/" + assetName + ".asset";
+                MeshUtility.Optimize(chunk.Mesh);
+                AssetDatabase.CreateAsset(chunk.Mesh, path);
+                AssetDatabase.SaveAssets();
+#endif
             }
         }
 
@@ -185,7 +199,7 @@ namespace AleVerDes.Voxels
             return false;
         }
 
-        public bool IsBlockExists(Vector3Int blockPosition)
+        public bool IsSolidBlock(Vector3Int blockPosition)
         {
             var chunkIndex = GetChunkIndex(blockPosition);
             if (chunkIndex < 0 || chunkIndex >= _chunks.Count)
@@ -193,7 +207,7 @@ namespace AleVerDes.Voxels
             return GetBlockVoxelIndex(blockPosition) > 0;
         }
 
-        public bool IsBlockInChunks(Vector3Int blockPosition)
+        public bool IsBlockExistsInChunks(Vector3Int blockPosition)
         {
             var chunkIndex = GetChunkIndex(blockPosition);
             if (chunkIndex < 0 || chunkIndex >= _chunks.Count)
