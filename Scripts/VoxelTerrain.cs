@@ -147,6 +147,7 @@ namespace AleVerDes.Voxels
                 });
                 chunk.Components.MeshCollider.sharedMesh = chunk.Mesh;
 #if UNITY_EDITOR
+                EditorUtility.SetDirty(chunk.Data);
                 var assetName = $"Chunk {chunk.Position} Mesh";
                 var path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/Chunks/" + assetName + ".asset";
                 if (!File.Exists(path))
@@ -171,6 +172,7 @@ namespace AleVerDes.Voxels
                 chunk.Components.MeshCollider.sharedMesh = chunk.Mesh;
                 chunk.Components.MeshFilter.sharedMesh = chunk.Mesh;
 #if UNITY_EDITOR
+                EditorUtility.SetDirty(chunk.Data);
                 var assetName = $"Chunk {chunk.Position} Mesh";
                 var path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/Chunks/" + assetName + ".asset";
                 if (!File.Exists(path))
