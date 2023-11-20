@@ -245,6 +245,8 @@ namespace AleVerDes.Voxels
             if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition) || VoxelTerrain.GetBlockVoxelIndex(hoveredBlockPosition) == 0)
                 hoveredBlockPosition -= Vector3Int.up;
             if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition))
+                hoveredBlockPosition += 2 * Vector3Int.up;
+            if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition))
                 return hoveredBlocks;
             hoveredBlocks.Add(hoveredBlockPosition);
             processed.Add(hoveredBlockPosition);
