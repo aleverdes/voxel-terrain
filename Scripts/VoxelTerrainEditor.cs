@@ -361,17 +361,25 @@ namespace AleVerDes.Voxels
                 if (Tool == VoxelTerrainEditorTool.Painting)
                 {
                     var chunks = new HashSet<int>();
+                    var chunksUpdateRequired = false;
                     
                     foreach (var hoveredBlock in _hoveredBlocks)
                     {
                         ref var blockVoxelIndex = ref VoxelTerrain.GetBlockVoxelIndex(hoveredBlock);
-                        if (blockVoxelIndex > 0)
-                            blockVoxelIndex = (byte) (VoxelTerrain.Settings.TextureAtlas.VoxelDatabase.IndexOf(SelectedPaintingVoxel) + 1);
+                        var newBlockVoxelIndex = (byte)(VoxelTerrain.Settings.TextureAtlas.VoxelDatabase.IndexOf(SelectedPaintingVoxel) + 1);
+                        if (blockVoxelIndex > 0 && blockVoxelIndex != newBlockVoxelIndex)
+                        {
+                            blockVoxelIndex = newBlockVoxelIndex;
+                            chunksUpdateRequired = true;
+                        }
                         chunks.Add(VoxelTerrain.GetChunkIndex(hoveredBlock));
                     }
-                    
-                    VoxelTerrain.UpdateChunks(chunks);
-                    EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+
+                    if (chunksUpdateRequired)
+                    {
+                        VoxelTerrain.UpdateChunks(chunks);
+                        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+                    }
                 }
                 
                 if (Tool == VoxelTerrainEditorTool.NoiseWeight)
@@ -381,16 +389,25 @@ namespace AleVerDes.Voxels
                         dt = Mathf.Sign(dt);
                     
                     var chunks = new HashSet<int>();
+                    var chunksUpdateRequired = false;
                     
                     foreach (var hoveredBlock in _hoveredBlocks)
                     {
                         ref var blockNoiseWeight = ref VoxelTerrain.GetBlockNoiseWeight(hoveredBlock);
-                        blockNoiseWeight = (byte) Mathf.Clamp(blockNoiseWeight + dt, byte.MinValue, byte.MaxValue);
+                        var newBlockNoiseWeight = (byte) Mathf.Clamp(blockNoiseWeight + dt, byte.MinValue, byte.MaxValue);
+                        if (blockNoiseWeight != newBlockNoiseWeight)
+                        {
+                            blockNoiseWeight = newBlockNoiseWeight;
+                            chunksUpdateRequired = true;
+                        }
                         chunks.Add(VoxelTerrain.GetChunkIndex(hoveredBlock));
                     }
                     
-                    VoxelTerrain.UpdateChunks(chunks);
-                    EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+                    if (chunksUpdateRequired)
+                    {
+                        VoxelTerrain.UpdateChunks(chunks);
+                        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+                    }
                 }
             }
             
