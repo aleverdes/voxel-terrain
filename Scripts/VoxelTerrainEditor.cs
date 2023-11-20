@@ -34,7 +34,8 @@ namespace AleVerDes.Voxels
         private SerializedProperty _noiseWeightBrushRadiusProperty;
         private SerializedProperty _noiseWeightBrushStrengthProperty;
         private SerializedProperty _selectedPaintingVoxelProperty;
-        
+
+        private int _currentSettingHeight;
         private int _selectedPaintingVoxelGridElement;
 
         private bool _initialized;
@@ -241,8 +242,10 @@ namespace AleVerDes.Voxels
             var toAdd = new List<Vector3Int>();
             
             var hoveredBlockPosition = GetBlockByWorldPosition(worldPosition);
-            if (VoxelTerrain.GetBlockVoxelIndex(hoveredBlockPosition) == 0)
+            if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition) || VoxelTerrain.GetBlockVoxelIndex(hoveredBlockPosition) == 0)
                 hoveredBlockPosition -= Vector3Int.up;
+            if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition))
+                return hoveredBlocks;
             hoveredBlocks.Add(hoveredBlockPosition);
             processed.Add(hoveredBlockPosition);
             
