@@ -243,9 +243,17 @@ namespace AleVerDes.Voxels
             
             var hoveredBlockPosition = GetBlockByWorldPosition(worldPosition);
             if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition) || VoxelTerrain.GetBlockVoxelIndex(hoveredBlockPosition) == 0)
+            {
                 hoveredBlockPosition -= Vector3Int.up;
-            if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition))
-                hoveredBlockPosition += 2 * Vector3Int.up;
+                if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition) || VoxelTerrain.GetBlockVoxelIndex(hoveredBlockPosition) == 0)
+                {
+                    hoveredBlockPosition += Vector3Int.up;
+                    if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition) || VoxelTerrain.GetBlockVoxelIndex(hoveredBlockPosition) == 0)
+                    {
+                        hoveredBlockPosition += Vector3Int.up;
+                    }
+                }
+            }
             if (!VoxelTerrain.IsBlockExistsInChunks(hoveredBlockPosition))
                 return hoveredBlocks;
             hoveredBlocks.Add(hoveredBlockPosition);
