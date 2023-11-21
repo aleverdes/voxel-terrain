@@ -30,6 +30,7 @@ namespace AleVerDes.Voxels
         public NoiseProvider VerticesNoise => _verticesNoise;
 
         [Button("Create new terrain")]
+        [ContextMenu("Create new terrain")]
         public void New()
         {
             if (_settings == null)

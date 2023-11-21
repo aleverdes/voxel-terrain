@@ -8,6 +8,12 @@ namespace AleVerDes.Voxels
     {
         [HideInInspector] public byte[] BlockVoxels;
         [HideInInspector] public byte[] BlockNoiseWeights;
+        
+        private readonly List<Vector3> _vertices = new List<Vector3>();
+        private readonly List<Vector2> _uvs = new List<Vector2>();
+        private readonly List<Vector4> _tangents = new List<Vector4>();
+        private readonly List<int> _triangles = new List<int>();
+        private readonly List<Vector3> _normals = new List<Vector3>();
 
         public void Initialize(Vector3Int chunkSize)
         {
@@ -39,8 +45,6 @@ namespace AleVerDes.Voxels
         {
             if (!mesh)
                 mesh = new Mesh();
-            else
-                mesh.Clear();
 
             var voxelTerrain = generationData.VoxelTerrain;
             var voxelTerrainSettings = voxelTerrain.Settings;
@@ -49,10 +53,12 @@ namespace AleVerDes.Voxels
             var verticesNoise = voxelTerrain.VerticesNoise;
             var atlas = voxelTerrainSettings.TextureAtlas;
 
-            var vertices = new List<Vector3>();
-            var uvs = new List<Vector2>();
-            var tangents = new List<Vector4>();
-            var triangles = new List<int>();
+            _normals.Clear();
+            _vertices.Clear();
+            _uvs.Clear();
+            _tangents.Clear();
+            _triangles.Clear();
+
             var trianglesCount = 0;
 
             var chunkOffset = generationData.ChunkPosition * chunkSize;
@@ -128,7 +134,7 @@ namespace AleVerDes.Voxels
                 var left = chunkOffset + new Vector3Int(x - 1, y, z);
                 if (!voxelTerrain.IsSolidBlock(left) && voxelTerrain.IsBlockExistsInChunks(left))
                 {
-                    vertices.AddRange(new[]
+                    _vertices.AddRange(new[]
                     {
                         Mul(v000, blockSize),
                         Mul(v001, blockSize),
@@ -136,15 +142,19 @@ namespace AleVerDes.Voxels
                         Mul(v010, blockSize),
                     });
 
-                    AddTriangles(triangles, ref trianglesCount);
-                    AddUVs(uvs, uvPositions, uvSize, FaceDirection.Left);
-                    AddTangents(tangents);
+                    AddTriangles(_triangles, ref trianglesCount);
+                    AddUVs(_uvs, uvPositions, uvSize, FaceDirection.Left);
+                    AddTangents(_tangents);
+                    _normals.Add(Vector3.left);
+                    _normals.Add(Vector3.left);
+                    _normals.Add(Vector3.left);
+                    _normals.Add(Vector3.left);
                 }
 
                 var right = chunkOffset + new Vector3Int(x + 1, y, z);
                 if (!voxelTerrain.IsSolidBlock(right) && voxelTerrain.IsBlockExistsInChunks(right))
                 {
-                    vertices.AddRange(new[]
+                    _vertices.AddRange(new[]
                     {
                         Mul(v101, blockSize),
                         Mul(v100, blockSize),
@@ -152,15 +162,19 @@ namespace AleVerDes.Voxels
                         Mul(v111, blockSize),
                     });
 
-                    AddTriangles(triangles, ref trianglesCount);
-                    AddUVs(uvs, uvPositions, uvSize, FaceDirection.Right);
-                    AddTangents(tangents);
+                    AddTriangles(_triangles, ref trianglesCount);
+                    AddUVs(_uvs, uvPositions, uvSize, FaceDirection.Right);
+                    AddTangents(_tangents);
+                    _normals.Add(Vector3.right);
+                    _normals.Add(Vector3.right);
+                    _normals.Add(Vector3.right);
+                    _normals.Add(Vector3.right);
                 }
 
                 var top = chunkOffset + new Vector3Int(x, y + 1, z);
                 if (!voxelTerrain.IsSolidBlock(top))
                 {
-                    vertices.AddRange(new[]
+                    _vertices.AddRange(new[]
                     {
                         Mul(v010, blockSize),
                         Mul(v011, blockSize),
@@ -168,15 +182,19 @@ namespace AleVerDes.Voxels
                         Mul(v110, blockSize),
                     });
 
-                    AddTriangles(triangles, ref trianglesCount);
-                    AddUVs(uvs, uvPositions, uvSize, FaceDirection.Top);
-                    AddTangents(tangents);
+                    AddTriangles(_triangles, ref trianglesCount);
+                    AddUVs(_uvs, uvPositions, uvSize, FaceDirection.Top);
+                    AddTangents(_tangents);
+                    _normals.Add(Vector3.up);
+                    _normals.Add(Vector3.up);
+                    _normals.Add(Vector3.up);
+                    _normals.Add(Vector3.up);
                 }
 
                 var bottom = chunkOffset + new Vector3Int(x, y - 1, z);
                 if (!voxelTerrain.IsSolidBlock(bottom) && voxelTerrain.IsBlockExistsInChunks(bottom))
                 {
-                    vertices.AddRange(new[]
+                    _vertices.AddRange(new[]
                     {
                         Mul(v001, blockSize),
                         Mul(v000, blockSize),
@@ -184,15 +202,19 @@ namespace AleVerDes.Voxels
                         Mul(v101, blockSize),
                     });
 
-                    AddTriangles(triangles, ref trianglesCount);
-                    AddUVs(uvs, uvPositions, uvSize, FaceDirection.Bottom);
-                    AddTangents(tangents);
+                    AddTriangles(_triangles, ref trianglesCount);
+                    AddUVs(_uvs, uvPositions, uvSize, FaceDirection.Bottom);
+                    AddTangents(_tangents);
+                    _normals.Add(Vector3.down);
+                    _normals.Add(Vector3.down);
+                    _normals.Add(Vector3.down);
+                    _normals.Add(Vector3.down);
                 }
 
                 var back = chunkOffset + new Vector3Int(x, y, z - 1);
                 if (!voxelTerrain.IsSolidBlock(back) && voxelTerrain.IsBlockExistsInChunks(back))
                 {
-                    vertices.AddRange(new[]
+                    _vertices.AddRange(new[]
                     {
                         Mul(v100, blockSize),
                         Mul(v000, blockSize),
@@ -200,15 +222,19 @@ namespace AleVerDes.Voxels
                         Mul(v110, blockSize),
                     });
 
-                    AddTriangles(triangles, ref trianglesCount);
-                    AddUVs(uvs, uvPositions, uvSize, FaceDirection.Back);
-                    AddTangents(tangents);
+                    AddTriangles(_triangles, ref trianglesCount);
+                    AddUVs(_uvs, uvPositions, uvSize, FaceDirection.Back);
+                    AddTangents(_tangents);
+                    _normals.Add(Vector3.back);
+                    _normals.Add(Vector3.back);
+                    _normals.Add(Vector3.back);
+                    _normals.Add(Vector3.back);
                 }
 
                 var front = chunkOffset + new Vector3Int(x, y, z + 1);
                 if (!voxelTerrain.IsSolidBlock(front) && voxelTerrain.IsBlockExistsInChunks(front))
                 {
-                    vertices.AddRange(new[]
+                    _vertices.AddRange(new[]
                     {
                         Mul(v001, blockSize),
                         Mul(v101, blockSize),
@@ -216,18 +242,21 @@ namespace AleVerDes.Voxels
                         Mul(v011, blockSize),
                     });
 
-                    AddTriangles(triangles, ref trianglesCount);
-                    AddUVs(uvs, uvPositions, uvSize, FaceDirection.Front);
-                    AddTangents(tangents);
+                    AddTriangles(_triangles, ref trianglesCount);
+                    AddUVs(_uvs, uvPositions, uvSize, FaceDirection.Front);
+                    AddTangents(_tangents);
+                    _normals.Add(Vector3.forward);
+                    _normals.Add(Vector3.forward);
+                    _normals.Add(Vector3.forward);
+                    _normals.Add(Vector3.forward);
                 }
             }
 
-            mesh.vertices = vertices.ToArray();
-            mesh.uv = uvs.ToArray();
-            mesh.tangents = tangents.ToArray();
-            mesh.triangles = triangles.ToArray();
-            
-            mesh.RecalculateNormals();
+            mesh.SetVertices(_vertices);
+            mesh.SetUVs(0, _uvs);
+            mesh.SetTangents(_tangents);
+            mesh.SetTriangles(_triangles, 0);
+            mesh.SetNormals(_normals);
         }
 
         private static VertexOffset GetVertexOffset(NoiseProvider noiseGenerator, Vector3Int blockPosition, Vector3 blockSize)
