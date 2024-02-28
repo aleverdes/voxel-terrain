@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e07ea3614d50411e88feef701225b029
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _canvasGroup: {instanceID: 0}
+  - _content: {instanceID: 0}
+  - _animationPreset: {fileID: 11400000, guid: c32fbe2dcb345440382074c2423e56af, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

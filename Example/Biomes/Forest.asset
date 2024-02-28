@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 216bfe9e497f48bf97adf5f296e18431, type: 3}
+  m_Name: Forest
+  m_EditorClassIdentifier: 
+  _biomeMapColor: {r: 0.15302376, g: 0.2830189, b: 0.14017445, a: 1}
+  _voxels: []
+  _landscapeNoise: {fileID: 0}
+  _temperature: 0.37040022
+  _humidity: 0.45809847
+  _altitude: 0.5993046
