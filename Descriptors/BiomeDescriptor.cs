@@ -29,9 +29,9 @@ namespace TravkinGames.Voxels
         
         public bool IsVoxelExists(Vector3Int position, float noise)
         {
-            if (_minMaxHeight.x < position.y)
+            if (position.y < _minMaxHeight.x)
                 return true;
-            if (_minMaxHeight.y > position.y)
+            if (position.y > _minMaxHeight.y)
                 return false;
             var t = Mathf.InverseLerp(_minMaxHeight.x, _minMaxHeight.y, position.y);
             return noise > t;

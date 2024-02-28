@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Field
   m_EditorClassIdentifier: 
   _biomeMapColor: {r: 0.6142852, g: 0.93333334, b: 0.31372553, a: 1}
+  _defaultVoxel: {fileID: 11400000, guid: 6c21006dc7a7846c5931ddcd05a3f5fd, type: 2}
   _voxels: []
-  _landscapeNoise: {fileID: 0}
+  _landscapeNoise: {fileID: 11400000, guid: a02419afc4e18402bae74e385cddf750, type: 2}
+  _minMaxHeight: {x: 5, y: 40}
   _temperature: 0.9352397
   _humidity: 0.8399582
   _altitude: 0.31522658

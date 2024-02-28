@@ -1,34 +1,36 @@
+using System;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace TravkinGames.Voxels
 {
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
-    public struct CalculateVerticesCountJob : IJobFor
+    public struct CalculateVerticesCountJob : IJobParallelFor, IDisposable
     {
-        public VoxelTerrainChunk CurrentVoxelTerrainChunk;
-        public int3 ChunkSize;
+        [ReadOnly] public VoxelTerrainChunk CurrentVoxelTerrainChunk;
+        [ReadOnly] public int3 ChunkSize;
         
-        public VoxelTerrainChunk TopNeighbourVoxelTerrainChunk;
-        public VoxelTerrainChunk BottomNeighbourVoxelTerrainChunk;
-        public VoxelTerrainChunk LeftNeighbourVoxelTerrainChunk;
-        public VoxelTerrainChunk RightNeighbourVoxelTerrainChunk;
-        public VoxelTerrainChunk FrontNeighbourVoxelTerrainChunk;
-        public VoxelTerrainChunk BackNeighbourVoxelTerrainChunk;
+        [ReadOnly] public VoxelTerrainChunk TopNeighbourVoxelTerrainChunk;
+        [ReadOnly] public VoxelTerrainChunk BottomNeighbourVoxelTerrainChunk;
+        [ReadOnly] public VoxelTerrainChunk LeftNeighbourVoxelTerrainChunk;
+        [ReadOnly] public VoxelTerrainChunk RightNeighbourVoxelTerrainChunk;
+        [ReadOnly] public VoxelTerrainChunk FrontNeighbourVoxelTerrainChunk;
+        [ReadOnly] public VoxelTerrainChunk BackNeighbourVoxelTerrainChunk;
         
-        public int ResultVerticesCount;
+        [WriteOnly] public NativeArray<int> ResultVerticesCount;
         
         public void Execute(int index)
         {
             switch (index)
             {
-                case 0: ResultVerticesCount += CalculateTopVerticesCount(); break; 
-                case 1: ResultVerticesCount += CalculateBottomVerticesCount(); break;
-                case 2: ResultVerticesCount += CalculateLeftVerticesCount(); break;
-                case 3: ResultVerticesCount += CalculateRightVerticesCount(); break;
-                case 4: ResultVerticesCount += CalculateFrontVerticesCount(); break;
-                case 5: ResultVerticesCount += CalculateBackVerticesCount(); break;
+                case 0: ResultVerticesCount[0] = CalculateTopVerticesCount(); break; 
+                case 1: ResultVerticesCount[1] = CalculateBottomVerticesCount(); break;
+                case 2: ResultVerticesCount[2] = CalculateLeftVerticesCount(); break;
+                case 3: ResultVerticesCount[3] = CalculateRightVerticesCount(); break;
+                case 4: ResultVerticesCount[4] = CalculateFrontVerticesCount(); break;
+                case 5: ResultVerticesCount[5] = CalculateBackVerticesCount(); break;
             }
         }
 
@@ -42,7 +44,7 @@ namespace TravkinGames.Voxels
             {
                 if (y == ChunkSize.y - 1 && CurrentVoxelTerrainChunk.IsVoxelExists(x, y, z) && !TopNeighbourVoxelTerrainChunk.IsVoxelExists(x, y, z))
                     count += 4;
-                else if (y < ChunkSize.y - 1 && CurrentVoxelTerrainChunk.IsVoxelExists(x, y, z) && !CurrentVoxelTerrainChunk.IsVoxelExists(x, y + 1, z))
+                else if (y < ChunkSize.y - 1 && CurrentVoxelTerrainChunk.IsVoxelExists(x, y, z) && !CurrentVoxelTerrainChunk.IsVoxelExists(x, y + 1, z)) 
                     count += 4;
             }
             
@@ -62,7 +64,7 @@ namespace TravkinGames.Voxels
                 else if (y > 0 && CurrentVoxelTerrainChunk.IsVoxelExists(x, y, z) && !CurrentVoxelTerrainChunk.IsVoxelExists(x, y - 1, z))
                     count += 4;
             }
-            
+
             return count;
         }
         
@@ -132,6 +134,11 @@ namespace TravkinGames.Voxels
             }
 
             return count;
+        }
+
+        public void Dispose()
+        {
+            ResultVerticesCount.Dispose();
         }
     }
 }

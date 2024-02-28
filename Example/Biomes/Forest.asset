@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Forest
   m_EditorClassIdentifier: 
   _biomeMapColor: {r: 0.15302376, g: 0.2830189, b: 0.14017445, a: 1}
+  _defaultVoxel: {fileID: 11400000, guid: 7cffffccaf74f492b858eb8f505e3516, type: 2}
   _voxels: []
-  _landscapeNoise: {fileID: 0}
+  _landscapeNoise: {fileID: 11400000, guid: 4c1725b981063448b87d26ae6db5f450, type: 2}
+  _minMaxHeight: {x: 5, y: 40}
   _temperature: 0.37040022
   _humidity: 0.45809847
   _altitude: 0.5993046
