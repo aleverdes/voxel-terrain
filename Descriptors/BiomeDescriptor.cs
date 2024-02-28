@@ -10,8 +10,10 @@ namespace TravkinGames.Voxels
     public class BiomeDescriptor : ScriptableObject
     {
         [SerializeField] private Color _biomeMapColor = Color.white;
-        [SerializeField] private List<VoxelDescriptor> _voxels;
+        [SerializeField] private VoxelDescriptor _defaultVoxel;
+        [SerializeField] private List<VoxelMap> _voxels;
         [SerializeField] private NoiseProvider _landscapeNoise;
+        [SerializeField] private Vector2Int _minMaxHeight = new Vector2Int(8, 16);
         
         [Header("Definitions")]
         [SerializeField, Range(0, 1f)] private float _temperature;
@@ -19,11 +21,38 @@ namespace TravkinGames.Voxels
         [SerializeField, Range(0, 1f)] private float _altitude;
         
         public Color BiomeMapColor => _biomeMapColor;
-        public List<VoxelDescriptor> Voxels => _voxels;
+        public NoiseProvider LandscapeNoise => _landscapeNoise;
         
         public float Temperature => _temperature;
         public float Humidity => _humidity;
         public float Altitude => _altitude;
+        
+        public bool IsVoxelExists(Vector3Int position, float noise)
+        {
+            if (_minMaxHeight.x < position.y)
+                return true;
+            if (_minMaxHeight.y > position.y)
+                return false;
+            var t = Mathf.InverseLerp(_minMaxHeight.x, _minMaxHeight.y, position.y);
+            return noise > t;
+        }
+        
+        public VoxelDescriptor GetVoxel(int seed, Vector3Int position)
+        {
+            var noise = _landscapeNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
+            var bestVoxel = _defaultVoxel;
+            var bestNoise = float.MinValue;
+            foreach (var voxelMap in _voxels)
+            {
+                if (voxelMap.Noise.GetNoiseWithSeed(seed, position.x, position.y, position.z) > bestNoise)
+                {
+                    bestVoxel = voxelMap.Voxel;
+                    bestNoise = noise;
+                }
+            }
+
+            return bestVoxel;
+        }
 
         [Button("Generate random definitions")]
         private void GenerateRandomDefinitions()
@@ -32,6 +61,13 @@ namespace TravkinGames.Voxels
             _humidity = Random.value;
             _altitude = Random.value;
             _biomeMapColor = new Color(_temperature, _humidity, _altitude, 1f);
+        }
+        
+        [Serializable]
+        private struct VoxelMap
+        {
+            public VoxelDescriptor Voxel;
+            public NoiseProvider Noise;
         }
     }
 }

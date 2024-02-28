@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a84dcc56dc342faa6f0613dc720db29, type: 3}
+  m_Name: Voxel Atlas
+  m_EditorClassIdentifier: 
+  _voxelDatabase: {fileID: 11400000, guid: a3f7353e29ead4c9086f0f9c0dad9343, type: 2}
+  _atlasSize: 512
+  _textureSize: 32
+  _atlasTexture: {fileID: 2800000, guid: 9f664f73a367242d4ac4a402289266fe, type: 3}
+  _atlasMaterials:
+  - {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}
+  _voxelData:
+  - VoxelIndex: 0
+    MaterialIndex: 0
+    VariantsTextures:
+    - TopTextureIndex: 0
+      BottomTextureIndex: 1
+      SideTextureIndex: 2
+    - TopTextureIndex: 0
+      BottomTextureIndex: 3
+      SideTextureIndex: 2
+    - TopTextureIndex: 0
+      BottomTextureIndex: 4
+      SideTextureIndex: 2
+  - VoxelIndex: 1
+    MaterialIndex: 0
+    VariantsTextures:
+    - TopTextureIndex: 5
+      BottomTextureIndex: 5
+      SideTextureIndex: 5
+    - TopTextureIndex: 6
+      BottomTextureIndex: 6
+      SideTextureIndex: 6
+    - TopTextureIndex: 7
+      BottomTextureIndex: 7
+      SideTextureIndex: 7
+    - TopTextureIndex: 8
+      BottomTextureIndex: 8
+      SideTextureIndex: 8
+    - TopTextureIndex: 9
+      BottomTextureIndex: 9
+      SideTextureIndex: 9
+    - TopTextureIndex: 10
+      BottomTextureIndex: 10
+      SideTextureIndex: 10
+    - TopTextureIndex: 11
+      BottomTextureIndex: 11
+      SideTextureIndex: 11
+  - VoxelIndex: 2
+    MaterialIndex: 0
+    VariantsTextures:
+    - TopTextureIndex: 12
+      BottomTextureIndex: 12
+      SideTextureIndex: 12
+  - VoxelIndex: 3
+    MaterialIndex: 0
+    VariantsTextures:
+    - TopTextureIndex: 13
+      BottomTextureIndex: 13
+      SideTextureIndex: 13
+    - TopTextureIndex: 14
+      BottomTextureIndex: 14
+      SideTextureIndex: 14
+    - TopTextureIndex: 15
+      BottomTextureIndex: 15
+      SideTextureIndex: 15
+    - TopTextureIndex: 16
+      BottomTextureIndex: 16
+      SideTextureIndex: 16
+    - TopTextureIndex: 17
+      BottomTextureIndex: 17
+      SideTextureIndex: 17
+    - TopTextureIndex: 18
+      BottomTextureIndex: 18
+      SideTextureIndex: 18
+  _texturesPositions:
+  - {x: 0, y: 0}
+  - {x: 0.0625, y: 0}
+  - {x: 0.125, y: 0}
+  - {x: 0.1875, y: 0}
+  - {x: 0.25, y: 0}
+  - {x: 0.3125, y: 0}
+  - {x: 0.375, y: 0}
+  - {x: 0.4375, y: 0}
+  - {x: 0.5, y: 0}
+  - {x: 0.5625, y: 0}
+  - {x: 0.625, y: 0}
+  - {x: 0.6875, y: 0}
+  - {x: 0.75, y: 0}
+  - {x: 0.8125, y: 0}
+  - {x: 0.875, y: 0}
+  - {x: 0.9375, y: 0}
+  - {x: 0, y: 0.0625}
+  - {x: 0.0625, y: 0.0625}
+  - {x: 0.125, y: 0.0625}
+  _textureSizeInAtlas: {x: 0.0625, y: 0.0625}
+  _textureRectScale: 0.995

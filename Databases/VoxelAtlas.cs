@@ -14,43 +14,73 @@ namespace TravkinGames.Voxels
     [CreateAssetMenu(menuName = "Voxels/Atlas", fileName = "Voxel Atlas")]
     public class VoxelAtlas : ScriptableObject
     {
-        private static int[] _atlasSizes = { 64, 128, 256, 512, 1024, 2048, 4096 };
-        private static int[] _textureSizes = { 8, 16, 32, 64, 128, 256 };
+        private static readonly int[] AtlasSizes = { 64, 128, 256, 512, 1024, 2048, 4096 };
+        private static readonly int[] TextureSizes = { 8, 16, 32, 64, 128, 256 };
         
         [SerializeField] private VoxelDatabase _voxelDatabase;
         
         [Header("Atlas Settings")] 
-        [ValueDropdown("_atlasSizes")] [SerializeField] private int _atlasSize = 1024;
-        [ValueDropdown("_textureSizes")] [SerializeField] private int _textureSize = 64;
+        [ValueDropdown("AtlasSizes")] [SerializeField] private int _atlasSize = 1024;
+        [ValueDropdown("TextureSizes")] [SerializeField] private int _textureSize = 64;
+
+        [Header("Technical Data")] 
+        [SerializeField] private Texture _atlasTexture;
+        [SerializeField] private Material[] _atlasMaterials;
+        [SerializeField] private VoxelData[] _voxelData;
+        [SerializeField] private Vector2[] _texturesPositions;
+        [SerializeField] private Vector2 _textureSizeInAtlas;
+        [SerializeField] private float _textureRectScale = 0.995f;
         
-        [Header("Technical Data")]
-        [SerializeField] private bool _showTechnicalData; 
-        [SerializeField, ShowIf("_showTechnicalData")] private Texture _atlasTexture;
-        [SerializeField, ShowIf("_showTechnicalData")] private VoxelData[] _voxelData;
-        [SerializeField, ShowIf("_showTechnicalData")] private Vector2[] _texturesPositions;
-        [SerializeField, ShowIf("_showTechnicalData")] private Vector2 _textureSizeInAtlas;
-        [SerializeField, ShowIf("_showTechnicalData")] private float _textureRectScale = 0.99f;
+        public Texture AtlasTexture => _atlasTexture;
+        public Material[] AtlasMaterials => _atlasMaterials;
         
-        [Header("Atlas Textures")]
-        [SerializeField] private AtlasPerMaterialDefinition[] _atlasPerMaterialDefinitions;
- 
 #if UNITY_EDITOR
-        [Button("Generate Texture Atlas")]
-        public void GenerateTextureAtlas()
+        [Button("Generate")]
+        private void Generate()
         {
+            CalculateMaterials();
+            GenerateAtlasData();
+        }
+
+        /// <summary>
+        /// Calculate the materials from the voxel database
+        /// </summary>
+        private void CalculateMaterials()
+        {
+            // Get all materials from the voxel database
+            var materials = new List<Material>();
+            foreach (var voxelDescriptor in _voxelDatabase.GetElements())
+            foreach (var voxelDescriptorVariant in voxelDescriptor.Variants)
+                if (!materials.Contains(voxelDescriptorVariant.Material))
+                    materials.Add(voxelDescriptorVariant.Material);
+
+            // Save the materials to the atlas
+            _atlasMaterials = materials.ToArray();
+        }
+
+        /// <summary>
+        /// Generate the atlas texture and the voxel data
+        /// </summary>
+        private void GenerateAtlasData()
+        {
+            // Calculate the number of textures in the atlas
             var atlasTextureLength = _atlasSize / _textureSize;
             
+            // Calculate the size of the texture in the atlas
             var uvSize = (float) _textureSize / _atlasSize;
             _textureSizeInAtlas = new Vector2(uvSize, uvSize);
 
+            // Create the atlas texture and the voxel data
             var atlas = new Texture2D(_atlasSize, _atlasSize, TextureFormat.RGBA32, 0, true);
             var voxelDataList = new List<VoxelData>();
             var texturesIndices = new Dictionary<Texture2D, int>();
             var texturesUvPositions = new Dictionary<int, Vector2>();
 
+            // Fill the atlas with textures
             var atlasTextureIndex = 0;
             for (var voxelIndex = 0; voxelIndex < _voxelDatabase.GetCount(); voxelIndex++)
             {
+                // Get the voxel and its variants
                 var voxel = _voxelDatabase[voxelIndex];
                 var voxelData = new VoxelData
                 {
@@ -58,46 +88,63 @@ namespace TravkinGames.Voxels
                     VariantsTextures = new VoxelVariantTextures[voxel.Variants.Length]
                 };
 
+                // Fill the voxel data with textures
                 for (var voxelVariantIndex = 0; voxelVariantIndex < voxel.Variants.Length; voxelVariantIndex++)
                 {
+                    // Get the variant and its textures
                     var voxelVariant = voxel.Variants[voxelVariantIndex];
                     voxelData.VariantsTextures[voxelVariantIndex].TopTextureIndex = GetVoxelVariantTextureAtlasIndex(voxelVariant.Top);
                     voxelData.VariantsTextures[voxelVariantIndex].BottomTextureIndex = GetVoxelVariantTextureAtlasIndex(voxelVariant.Bottom);
                     voxelData.VariantsTextures[voxelVariantIndex].SideTextureIndex = GetVoxelVariantTextureAtlasIndex(voxelVariant.Side);
+                    continue;
 
+                    // Get the index of the texture in the atlas
                     int GetVoxelVariantTextureAtlasIndex(Texture2D texture)
                     {
-                        if (texturesIndices.TryGetValue(texture, out var atlasIndex))
-                            return atlasIndex;
+                        if (texturesIndices.TryGetValue(texture, out var inAtlasIndex))
+                            return inAtlasIndex;
 
                         var topTextureColumnAndRow = GetTextureColumnAndRow(atlasTextureIndex, atlasTextureLength);
                         var uvPosition = WriteTextureToAtlas(atlas, topTextureColumnAndRow, texture);
                         texturesUvPositions[atlasTextureIndex] = uvPosition;
 
                         texturesIndices[texture] = atlasTextureIndex;
-                        atlasIndex = atlasTextureIndex;
+                        inAtlasIndex = atlasTextureIndex;
                         atlasTextureIndex++;
 
-                        return atlasIndex;
+                        return inAtlasIndex;
                     }
                 }
 
+                // Add the voxel data to the list
                 voxelDataList.Add(voxelData);
             }
 
+            // Save voxel data and textures positions
             _voxelData = voxelDataList.ToArray();
             _texturesPositions = texturesUvPositions.Values.ToArray();
             
+            // Saving the atlas to the project
             var pathToAtlas = AssetDatabase.GetAssetPath(this);
-            var pathToPng = Path.Combine(Path.GetDirectoryName(pathToAtlas), Path.GetFileNameWithoutExtension(pathToAtlas) + ".png");
+            var pathToPng = Path.Combine(
+                Path.GetDirectoryName(pathToAtlas) ?? string.Empty,
+                $"{Path.GetFileNameWithoutExtension(pathToAtlas)}.png"
+            );
             var pngBytes = atlas.EncodeToPNG();
             File.WriteAllBytes(pathToPng, pngBytes);
-            AssetDatabase.ImportAsset(pathToPng);
             
+            // Importing the texture to the project
+            AssetDatabase.ImportAsset(pathToPng);
             _atlasTexture = AssetDatabase.LoadAssetAtPath<Texture>(pathToPng);
             _atlasTexture.filterMode = FilterMode.Point;
         }
 
+        /// <summary>
+        /// Get the column and row of the texture in the atlas
+        /// </summary>
+        /// <param name="index">Index of the texture</param>
+        /// <param name="length">Length of the atlas</param>
+        /// <returns>Column and row of the texture in the atlas</returns>
         private Vector2Int GetTextureColumnAndRow(int index, int length)
         {
             var x = index % length;
@@ -105,6 +152,13 @@ namespace TravkinGames.Voxels
             return new Vector2Int(x, y);
         }
         
+        /// <summary>
+        /// Write the texture to the atlas
+        /// </summary>
+        /// <param name="atlas">Atlas texture</param>
+        /// <param name="position">Position of the texture in the atlas</param>
+        /// <param name="texture">Texture to write</param>
+        /// <returns>Possition of the texture in the atlas</returns>
         private Vector2 WriteTextureToAtlas(Texture2D atlas, Vector2Int position, Texture2D texture)
         {
             var scaledTexture = TextureScaler.Scale(texture, _textureSize, _textureSize);
@@ -114,26 +168,26 @@ namespace TravkinGames.Voxels
         }
 #endif
         
+        /// <summary>
+        /// Container for the voxel data: index, material index and variant textures
+        /// </summary>
         [Serializable]
         private struct VoxelData
         {
             public int VoxelIndex;
+            public int MaterialIndex;
             public VoxelVariantTextures[] VariantsTextures;
         }
 
+        /// <summary>
+        /// Container for the variant textures: top, bottom and side
+        /// </summary>
         [Serializable]
         private struct VoxelVariantTextures
         {
             public int TopTextureIndex;
             public int BottomTextureIndex;
             public int SideTextureIndex;
-        }
-        
-        [Serializable]
-        private struct AtlasPerMaterialDefinition
-        {
-            public Material Material;
-            public Texture TextureAtlas;
         }
     }
 }

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d82af9cbf17d4f6d88bf5c2305e9a9d7, type: 3}
+  m_Name: Gravel
+  m_EditorClassIdentifier: 
+  _variants:
+  - _top: {fileID: 2800000, guid: 63f33472890034e36944b45e1fe695a1, type: 3}
+    _side: {fileID: 2800000, guid: 63f33472890034e36944b45e1fe695a1, type: 3}
+    _bottom: {fileID: 2800000, guid: 63f33472890034e36944b45e1fe695a1, type: 3}
+    _material: {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}
+  - _top: {fileID: 2800000, guid: d6611365335c24a43956690ca48e1a7a, type: 3}
+    _side: {fileID: 2800000, guid: d6611365335c24a43956690ca48e1a7a, type: 3}
+    _bottom: {fileID: 2800000, guid: d6611365335c24a43956690ca48e1a7a, type: 3}
+    _material: {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}
+  - _top: {fileID: 2800000, guid: 8444ab828c65d43a0b738f082b71937a, type: 3}
+    _side: {fileID: 2800000, guid: 8444ab828c65d43a0b738f082b71937a, type: 3}
+    _bottom: {fileID: 2800000, guid: 8444ab828c65d43a0b738f082b71937a, type: 3}
+    _material: {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}
+  - _top: {fileID: 2800000, guid: 4865ef47c3afc4ad5b94fb6dc48c9eb9, type: 3}
+    _side: {fileID: 2800000, guid: 4865ef47c3afc4ad5b94fb6dc48c9eb9, type: 3}
+    _bottom: {fileID: 2800000, guid: 4865ef47c3afc4ad5b94fb6dc48c9eb9, type: 3}
+    _material: {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}
+  - _top: {fileID: 2800000, guid: 4e7772d41e7a942788bce3b21a17239f, type: 3}
+    _side: {fileID: 2800000, guid: 4e7772d41e7a942788bce3b21a17239f, type: 3}
+    _bottom: {fileID: 2800000, guid: 4e7772d41e7a942788bce3b21a17239f, type: 3}
+    _material: {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}
+  - _top: {fileID: 2800000, guid: ecb01172848f3415db4bf569a88a7d0f, type: 3}
+    _side: {fileID: 2800000, guid: ecb01172848f3415db4bf569a88a7d0f, type: 3}
+    _bottom: {fileID: 2800000, guid: ecb01172848f3415db4bf569a88a7d0f, type: 3}
+    _material: {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}
+  - _top: {fileID: 2800000, guid: 7f4b32383aa124e6ca4b35783a667a6c, type: 3}
+    _side: {fileID: 2800000, guid: 7f4b32383aa124e6ca4b35783a667a6c, type: 3}
+    _bottom: {fileID: 2800000, guid: 7f4b32383aa124e6ca4b35783a667a6c, type: 3}
+    _material: {fileID: 2100000, guid: 81df538c7f61e4fe4b2fe19e9127e106, type: 2}

@@ -12,6 +12,9 @@ namespace TravkinGames.Voxels
         private int _seed;
         private int _prevSeed;
         
+        private float _scale = 1f;
+        private float _prevScale = 1f;
+        
         private Texture2D _previewTexture;
 
         public static void ShowWindow(BiomeMapGenerator biomeMapGenerator)
@@ -34,6 +37,7 @@ namespace TravkinGames.Voxels
         {
             _biomeMapGenerator = (BiomeMapGenerator) EditorGUILayout.ObjectField("Biome Map Generator", _biomeMapGenerator, typeof(BiomeMapGenerator), false);
             _seed = EditorGUILayout.IntField("Seed", _seed);
+            _scale = EditorGUILayout.Slider("Scale", _scale, 0.1f, 100f);
             
             if (_biomeMapGenerator != _prevBiomeMapGenerator)
             {
@@ -47,21 +51,22 @@ namespace TravkinGames.Voxels
                 Redraw();
             }
             
+            if (Mathf.Abs(_scale - _prevScale) > Mathf.Epsilon)
+            {
+                _prevScale = _scale;
+                Redraw();
+            }
+            
             EditorGUI.DrawPreviewTexture(new Rect(0, 64, position.width, position.height), _previewTexture);
         }
 
         private void Redraw()
         {
-            for (var i = 0; i < 256; i++)
-            for (var j = 0; j < 256; j++)
+            for (var i = -128; i < 128; i++)
+            for (var j = -128; j < 128; j++)
             {
-                var biomesState = _biomeMapGenerator.GetBiomesState(_seed, new Vector2Int(j, i));
-                var maxWeight = biomesState[0].biomeWeight;
-                var maxBiome = biomesState[0].biomeDescriptor;
-                for (var k = 1; k < biomesState.Length; k++)
-                    if (biomesState[k].biomeWeight > maxWeight)
-                        (maxBiome, maxWeight) = (biomesState[k].biomeDescriptor, biomesState[k].biomeWeight);
-                _previewTexture.SetPixel(j, i, maxBiome.BiomeMapColor);
+                var biomesState = _biomeMapGenerator.GetVoxelBiomeState(_seed, new Vector3Int((int) _scale * j, (int) _scale * i, 0));
+                _previewTexture.SetPixel(j, i, biomesState.BestBiome.BiomeMapColor);
             }
             _previewTexture.Apply();
         }

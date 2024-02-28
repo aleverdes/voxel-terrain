@@ -13,31 +13,47 @@ namespace TravkinGames.Voxels
         [SerializeField] private NoiseProvider _humidityNoise;
         [SerializeField] private NoiseProvider _altitudeNoise;
         
-        public (BiomeDescriptor biomeDescriptor, float biomeWeight)[] GetBiomesState(int seed, Vector2Int position)
+        public VoxelBiomeState GetVoxelBiomeState(int seed, Vector3Int position)
         {
-            var temperature = _temperatureNoise.GetNoiseWithSeed(seed, position.x, position.y, 0);
-            var humidity = _humidityNoise.GetNoiseWithSeed(seed, position.x, position.y, 0);
-            var altitude = _altitudeNoise.GetNoiseWithSeed(seed, position.x, position.y, 0);
+            var temperature = _temperatureNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
+            var humidity = _humidityNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
+            var altitude = _altitudeNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
 
-            var biomesState = new (BiomeDescriptor biomeDescriptor, float biomeWeight)[_biomeDatabase.GetCount()];
+            var voxelBiomeState = new VoxelBiomeState
+            {
+                BestBiome = null,
+                AllBiomes = new BiomeWeight[_biomeDatabase.GetCount()]
+            };
             
             var target = new Vector3(temperature, humidity, altitude);
             
             var i = 0;
             var sum = 0f;
+            var bestWeight = float.MinValue;
             foreach (var biome in _biomeDatabase.GetElements())
             {
                 var current = new Vector3(biome.Temperature, biome.Humidity, biome.Altitude);
                 var weight = Vector3.Distance(current, target);
-                biomesState[i] = (biome, weight);
+                voxelBiomeState.AllBiomes[i] = new BiomeWeight()
+                {
+                    BiomeDescriptor = biome,
+                    Weight = weight
+                };
+
+                if (weight > bestWeight)
+                {
+                    voxelBiomeState.BestBiome = biome;
+                    bestWeight = weight;
+                }
+                
                 sum += weight;
                 i++;
             }
 
-            for (var j = 0; j < biomesState.Length; j++) 
-                biomesState[j].biomeWeight = 1f - biomesState[j].biomeWeight / sum;
+            for (var j = 0; j < voxelBiomeState.AllBiomes.Length; j++) 
+                voxelBiomeState.AllBiomes[j].Weight = 1f - voxelBiomeState.AllBiomes[j].Weight / sum;
             
-            return biomesState;
+            return voxelBiomeState;
         }
         
 #if UNITY_EDITOR

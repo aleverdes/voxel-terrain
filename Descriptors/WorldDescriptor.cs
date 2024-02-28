@@ -22,5 +22,14 @@ namespace TravkinGames.Voxels
         [Header("Voxels")]
         [SerializeField] private VoxelDatabase _voxelDatabase;
         [SerializeField] private VoxelAtlas _voxelAtlas;
+        
+        public int Seed => _seed;
+        public bool IsInfinite => _isInfinite;
+        public Vector3Int WorldSize => _worldSize;
+        public Vector3Int ChunkSize => _chunkSize;
+        public BiomeDatabase BiomeDatabase => _biomeDatabase;
+        public BiomeMapGenerator BiomeMapGenerator => _biomeMapGenerator;
+        public VoxelDatabase VoxelDatabase => _voxelDatabase;
+        public VoxelAtlas VoxelAtlas => _voxelAtlas;
     }
 }
