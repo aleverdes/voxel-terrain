@@ -24,6 +24,11 @@ namespace TravkinGames.Voxels
         [SerializeField] private VoxelDatabase _voxelDatabase;
         [SerializeField] private VoxelAtlas _voxelAtlas;
         
+        [Header("Pregeneration")]
+        [SerializeField] private bool _isPregenerationEnabled = true;
+        [SerializeField] private Vector3Int _pregenerationOriginPosition = new Vector3Int(0, 0, 0);
+        [SerializeField] private Vector3Int _pregenerationSize = new Vector3Int(9, 3, 9);
+        
         public int Seed => _seed;
         public bool IsInfinite => _isInfinite;
         public Vector3Int WorldSize => _worldSize;
@@ -33,5 +38,9 @@ namespace TravkinGames.Voxels
         public Vector3 VoxelSize => _voxelSize;
         public VoxelDatabase VoxelDatabase => _voxelDatabase;
         public VoxelAtlas VoxelAtlas => _voxelAtlas;
+        
+        public bool IsPregenerationEnabled => _isPregenerationEnabled;
+        public Vector3Int PregenerationOriginPosition => _pregenerationOriginPosition;
+        public Vector3Int PregenerationSize => _pregenerationSize;
     }
 }

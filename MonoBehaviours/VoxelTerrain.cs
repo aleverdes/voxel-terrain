@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -32,6 +30,8 @@ namespace TravkinGames.Voxels
         {
             PrepareAtlasData();
             PrepareChunks();
+            if (_worldDescriptor.IsPregenerationEnabled)
+                PregenerateChunks();
         }
 
         private void OnDestroy()
@@ -140,6 +140,16 @@ namespace TravkinGames.Voxels
             }
         }
 
+        private void PregenerateChunks()
+        {
+            var origin = _worldDescriptor.PregenerationOriginPosition;
+            var size = _worldDescriptor.PregenerationSize;
+            for (var x = origin.x - size.x; x <= origin.x + size.x; x++)
+            for (var y = origin.y - size.y; y <= origin.y + size.y; y++)
+            for (var z = origin.z - size.z; z <= origin.z + size.z; z++)
+                GenerateChunk(new Vector3Int(x, y, z));
+        }
+
         private VoxelTerrainChunk GenerateChunk(Vector3Int chunkPosition)
         {
             var chunk = new VoxelTerrainChunk(_worldDescriptor.ChunkSize);
@@ -177,10 +187,10 @@ namespace TravkinGames.Voxels
         {
             var chunkView = _freeChunkViews.Dequeue();
             chunkView.MeshRenderer.enabled = true;
-            chunkView.MeshCollider.enabled = true;
             _activeChunkViews.Add(chunkPosition, chunkView);
-            chunkView.Mesh = GenerateChunkMesh(chunkView.Mesh, chunkPosition);
+            chunkView.Mesh = GenerateChunkMesh(chunkView.Mesh, chunkPosition, out var meshVerticesCount);
             chunkView.MeshCollider.sharedMesh = chunkView.Mesh;
+            chunkView.MeshCollider.enabled = meshVerticesCount > 0;
             var chunkOffset = new Vector3(
                 chunkPosition.x * _worldDescriptor.VoxelSize.x * _worldDescriptor.ChunkSize.x,
                 chunkPosition.y * _worldDescriptor.VoxelSize.y * _worldDescriptor.ChunkSize.y,
@@ -205,7 +215,7 @@ namespace TravkinGames.Voxels
             return _chunks.TryGetValue(chunkPosition, out var chunk) ? chunk : GenerateChunk(chunkPosition);
         }
 
-        private Mesh GenerateChunkMesh(Mesh mesh, Vector3Int chunkPosition)
+        private Mesh GenerateChunkMesh(Mesh mesh, Vector3Int chunkPosition, out int meshVerticesCount)
         {
             // Calculate mesh parameters
             var calculateMeshParametersJob = new CalculateMeshParametersJob()
@@ -298,16 +308,22 @@ namespace TravkinGames.Voxels
             
             // Set submesh
             meshData.subMeshCount = 1;
+            var bounds = new Bounds(chunkGlobalSize + chunkGlobalSize / 2f, chunkGlobalSize);
+            
             meshData.SetSubMesh(0, new SubMeshDescriptor(0, triangleIndicesCount)
             {
                 vertexCount = verticesCount,
-                bounds = new Bounds(chunkGlobalSize + chunkGlobalSize / 2f, chunkGlobalSize),
+                bounds = bounds
             });
 
             // Apply mesh data
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
             calculateMeshGridJob.Dispose();
             
+            mesh.RecalculateBounds();
+
+            meshVerticesCount = verticesCount;
+                    
             return mesh;
         }
 
