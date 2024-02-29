@@ -20,6 +20,7 @@ namespace TravkinGames.Voxels
         [SerializeField] private BiomeMapGenerator _biomeMapGenerator;
         
         [Header("Voxels")]
+        [SerializeField] private Vector3 _voxelSize = new Vector3(1, 1, 1);
         [SerializeField] private VoxelDatabase _voxelDatabase;
         [SerializeField] private VoxelAtlas _voxelAtlas;
         
@@ -29,6 +30,7 @@ namespace TravkinGames.Voxels
         public Vector3Int ChunkSize => _chunkSize;
         public BiomeDatabase BiomeDatabase => _biomeDatabase;
         public BiomeMapGenerator BiomeMapGenerator => _biomeMapGenerator;
+        public Vector3 VoxelSize => _voxelSize;
         public VoxelDatabase VoxelDatabase => _voxelDatabase;
         public VoxelAtlas VoxelAtlas => _voxelAtlas;
     }

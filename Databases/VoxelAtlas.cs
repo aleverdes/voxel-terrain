@@ -25,14 +25,27 @@ namespace TravkinGames.Voxels
 
         [Header("Technical Data")] 
         [SerializeField] private Texture _atlasTexture;
-        [SerializeField] private Material[] _atlasMaterials;
-        [SerializeField] private VoxelData[] _voxelData;
-        [SerializeField] private Vector2[] _texturesPositions;
-        [SerializeField] private Vector2 _textureSizeInAtlas;
+        [SerializeField] private List<Material> _atlasMaterials;
         [SerializeField] private float _textureRectScale = 0.995f;
+        [SerializeField] private bool _showAdvancedTechnicalData;
+        [SerializeField, ShowIf("_showAdvancedTechnicalData")] private VoxelData[] _voxelData;
+        [SerializeField, ShowIf("_showAdvancedTechnicalData")] private Vector2[] _texturesPositions;
+        [SerializeField, ShowIf("_showAdvancedTechnicalData")] private Vector2 _textureSizeInAtlas;
+        [SerializeField, ShowIf("_showAdvancedTechnicalData")] private Vector2Int[] _voxelIndexToVoxelVariantsStartIndexAndCount;
+        [SerializeField, ShowIf("_showAdvancedTechnicalData")] private int[] _voxelVariantsTopTextureIndex;
+        [SerializeField, ShowIf("_showAdvancedTechnicalData")] private int[] _voxelVariantsBottomTextureIndex;
+        [SerializeField, ShowIf("_showAdvancedTechnicalData")] private int[] _voxelVariantsSideTextureIndex;
         
         public Texture AtlasTexture => _atlasTexture;
-        public Material[] AtlasMaterials => _atlasMaterials;
+        public List<Material> AtlasMaterials => _atlasMaterials;
+        
+        public Vector2[] TexturesPositions => _texturesPositions;
+        public Vector2 TextureSizeInAtlas => _textureSizeInAtlas;
+        public float TextureRectScale => _textureRectScale;
+        public Vector2Int[] VoxelIndexToVoxelVariantsStartIndexAndCount => _voxelIndexToVoxelVariantsStartIndexAndCount;
+        public int[] VoxelVariantsTopTextureIndex => _voxelVariantsTopTextureIndex;
+        public int[] VoxelVariantsBottomTextureIndex => _voxelVariantsBottomTextureIndex;
+        public int[] VoxelVariantsSideTextureIndex => _voxelVariantsSideTextureIndex;
         
 #if UNITY_EDITOR
         [Button("Generate")]
@@ -55,7 +68,7 @@ namespace TravkinGames.Voxels
                     materials.Add(voxelDescriptorVariant.Material);
 
             // Save the materials to the atlas
-            _atlasMaterials = materials.ToArray();
+            _atlasMaterials = materials;
         }
 
         /// <summary>
@@ -75,9 +88,17 @@ namespace TravkinGames.Voxels
             var voxelDataList = new List<VoxelData>();
             var texturesIndices = new Dictionary<Texture2D, int>();
             var texturesUvPositions = new Dictionary<int, Vector2>();
+            
+            // Initialize the variants count
+            var voxelIndexToVoxelVariantsStartIndexAndCount = new Vector2Int[_voxelDatabase.GetCount()];
+            var voxelVariantsTopTextureIndex = new List<int>();
+            var voxelVariantsBottomTextureIndex = new List<int>();
+            var voxelVariantsSideTextureIndex = new List<int>();
 
             // Fill the atlas with textures
             var atlasTextureIndex = 0;
+            var prevVoxelVariantsLength = 0;
+            var globalVoxelVariantIndex = 0;
             for (var voxelIndex = 0; voxelIndex < _voxelDatabase.GetCount(); voxelIndex++)
             {
                 // Get the voxel and its variants
@@ -87,15 +108,25 @@ namespace TravkinGames.Voxels
                     VoxelIndex = voxelIndex,
                     VariantsTextures = new VoxelVariantTextures[voxel.Variants.Length]
                 };
+                
+                voxelIndexToVoxelVariantsStartIndexAndCount[voxelIndex] = new Vector2Int(prevVoxelVariantsLength, voxel.Variants.Length);
+                prevVoxelVariantsLength += voxel.Variants.Length;
 
                 // Fill the voxel data with textures
                 for (var voxelVariantIndex = 0; voxelVariantIndex < voxel.Variants.Length; voxelVariantIndex++)
                 {
                     // Get the variant and its textures
                     var voxelVariant = voxel.Variants[voxelVariantIndex];
+
                     voxelData.VariantsTextures[voxelVariantIndex].TopTextureIndex = GetVoxelVariantTextureAtlasIndex(voxelVariant.Top);
                     voxelData.VariantsTextures[voxelVariantIndex].BottomTextureIndex = GetVoxelVariantTextureAtlasIndex(voxelVariant.Bottom);
                     voxelData.VariantsTextures[voxelVariantIndex].SideTextureIndex = GetVoxelVariantTextureAtlasIndex(voxelVariant.Side);
+
+                    voxelVariantsTopTextureIndex.Add(voxelData.VariantsTextures[voxelVariantIndex].TopTextureIndex);
+                    voxelVariantsBottomTextureIndex.Add(voxelData.VariantsTextures[voxelVariantIndex].BottomTextureIndex);
+                    voxelVariantsSideTextureIndex.Add(voxelData.VariantsTextures[voxelVariantIndex].SideTextureIndex);
+                    globalVoxelVariantIndex++;
+                    
                     continue;
 
                     // Get the index of the texture in the atlas
@@ -123,6 +154,10 @@ namespace TravkinGames.Voxels
             // Save voxel data and textures positions
             _voxelData = voxelDataList.ToArray();
             _texturesPositions = texturesUvPositions.Values.ToArray();
+            _voxelIndexToVoxelVariantsStartIndexAndCount = voxelIndexToVoxelVariantsStartIndexAndCount;
+            _voxelVariantsTopTextureIndex = voxelVariantsTopTextureIndex.ToArray();
+            _voxelVariantsBottomTextureIndex = voxelVariantsBottomTextureIndex.ToArray();
+            _voxelVariantsSideTextureIndex = voxelVariantsSideTextureIndex.ToArray();
             
             // Saving the atlas to the project
             var pathToAtlas = AssetDatabase.GetAssetPath(this);

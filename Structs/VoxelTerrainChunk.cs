@@ -104,6 +104,18 @@ namespace TravkinGames.Voxels
         {
             return (byte)(_voxelsIndices[position.x + position.y * _xSize + position.z * _xSize * _ySize] - 1);
         }
+        
+        /// <summary>
+        /// Get voxel index at the specified position.
+        /// </summary>
+        /// <param name="x">Voxel X position in chunk space.</param>
+        /// <param name="y">Voxel Y position in chunk space.</param>
+        /// <param name="z">Voxel Z position in chunk space.</param>
+        /// <returns>Voxel index in voxel database</returns>
+        public byte GetVoxelIndex(int x, int y, int z)
+        {
+            return (byte)(_voxelsIndices[x + y * _xSize + z * _xSize * _ySize] - 1);
+        }
 
         /// <summary>
         /// Try to get voxel index at the specified position.

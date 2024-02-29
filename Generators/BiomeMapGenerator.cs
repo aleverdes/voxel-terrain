@@ -13,7 +13,7 @@ namespace TravkinGames.Voxels
         [SerializeField] private NoiseProvider _humidityNoise;
         [SerializeField] private NoiseProvider _altitudeNoise;
         
-        public VoxelBiomeState GetVoxelBiomeState(int seed, Vector3Int position)
+        public VoxelBiomeState GetVoxelBiomeState(int seed, Vector3 position)
         {
             var temperature = _temperatureNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
             var humidity = _humidityNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);

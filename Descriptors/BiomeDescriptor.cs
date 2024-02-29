@@ -27,7 +27,7 @@ namespace TravkinGames.Voxels
         public float Humidity => _humidity;
         public float Altitude => _altitude;
         
-        public bool IsVoxelExists(Vector3Int position, float noise)
+        public bool IsVoxelExists(Vector3 position, float noise)
         {
             if (position.y < _minMaxHeight.x)
                 return true;
@@ -37,7 +37,7 @@ namespace TravkinGames.Voxels
             return noise > t;
         }
         
-        public VoxelDescriptor GetVoxel(int seed, Vector3Int position)
+        public VoxelDescriptor GetVoxel(int seed, Vector3 position)
         {
             var noise = _landscapeNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
             var bestVoxel = _defaultVoxel;
