@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -109,9 +110,25 @@ namespace TravkinGames.Voxels
         
         private void PrepareChunks()
         {
+            if (_activeChunkViews != null)
+                foreach (var chunkView in _activeChunkViews.Values)
+                {
+                    Destroy(chunkView.Mesh);
+                    Destroy(chunkView.MeshFilter.gameObject);
+                }
+            
+            if (_freeChunkViews != null)
+                foreach (var chunkView in _freeChunkViews)
+                {
+                    Destroy(chunkView.Mesh);
+                    Destroy(chunkView.MeshFilter.gameObject);
+                }
+            
             _activeChunkViews = new Dictionary<Vector3Int, ChunkView>();
             _freeChunkViews = new Queue<ChunkView>();
-            _chunks = new Dictionary<Vector3Int, VoxelTerrainChunk>();
+            
+            _chunks ??= new Dictionary<Vector3Int, VoxelTerrainChunk>();
+            
             var atlasMaterials = _worldDescriptor.VoxelAtlas.AtlasMaterials;
             var t = 2f * _renderDistance + 1;
             for (var i = 0; i < t * t * t * 2; i++)

@@ -6,7 +6,7 @@ namespace TravkinGames.Voxels
     [CreateAssetMenu(menuName = "Voxels/Noise/Noise Combinator", fileName = "Noise Combinator")]
     public class NoiseCombinator : NoiseProvider
     {
-        [SerializeField] private Noise[] _noises;
+        [SerializeField] private NoiseStep[] _noises;
         
         [HideInInspector] [SerializeField] private Vector2 _minMaxNoise = new Vector2(float.MaxValue, float.MinValue);
         
@@ -69,7 +69,7 @@ namespace TravkinGames.Voxels
         }
 
         [Serializable]
-        private class Noise
+        private class NoiseStep
         {
             public NoiseProvider NoiseProvider;
             public Vector2 InverseLerp = new Vector2(0f, 1f);
