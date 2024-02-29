@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -13,7 +15,9 @@ namespace TravkinGames.Voxels
         [SerializeField] private Transform _generationOrigin;
         [SerializeField] private int _renderDistance = 1;
         
-        private Dictionary<Vector3Int, VoxelTerrainChunk> _chunks;
+        private Dictionary<Vector3Int, VoxelTerrainChunk> _chunksData;
+        private HashSet<Vector3Int> _generatedChunks;
+            
         private Dictionary<Vector3Int, ChunkView> _activeChunkViews;
         private Queue<ChunkView> _freeChunkViews;
         
@@ -26,9 +30,16 @@ namespace TravkinGames.Voxels
         private NativeArray<int> _voxelVariantsBottomTextureIndex;
         private NativeArray<int> _voxelVariantsSideTextureIndex;
         
+        private readonly Queue<Task<(Vector3Int, VoxelTerrainChunk)>> _chunkGenerationTasks = new();
+
+        private readonly List<Vector3Int> _toGenerate = new();
+        private float _lastGenerationTime;
+        private readonly Dictionary<VoxelDescriptor, byte> _voxelToIndex = new();
+        
         private void Awake()
         {
             PrepareAtlasData();
+            PrepareVoxelsData();
             PrepareChunks();
             if (_worldDescriptor.IsPregenerationEnabled)
                 PregenerateChunks();
@@ -42,7 +53,7 @@ namespace TravkinGames.Voxels
         private void Update()
         {
             _toDeactivateChunks.Clear();
-            foreach (var chunkPosition in _chunks.Keys)
+            foreach (var chunkPosition in _chunksData.Keys)
                 _toDeactivateChunks.Add(chunkPosition);
             
             _toActivateChunks.Clear();
@@ -59,7 +70,7 @@ namespace TravkinGames.Voxels
             {
                 var chunkPosition = originChunkPosition + new Vector3Int(x, y, z);
                 
-                if (!_chunks.ContainsKey(chunkPosition)) 
+                if (!_chunksData.ContainsKey(chunkPosition)) 
                     GenerateChunk(chunkPosition);
                 
                 _toDeactivateChunks.Remove(chunkPosition);
@@ -73,6 +84,28 @@ namespace TravkinGames.Voxels
             foreach (var chunkPosition in _toActivateChunks)
                 if (!_activeChunkViews.ContainsKey(chunkPosition))
                     ActivateChunk(chunkPosition);
+            
+            if (_chunkGenerationTasks.Count > 0)
+                if (_chunkGenerationTasks.Peek().IsCompleted)
+                {
+                    var (chunkPosition, chunk) = _chunkGenerationTasks.Dequeue().Result;
+                    _chunksData.Add(chunkPosition, chunk);
+                    if (_toActivateChunks.Contains(chunkPosition))
+                        ActivateChunk(chunkPosition);
+                }
+
+            if (Time.unscaledTime - _lastGenerationTime > 0.1f)
+            {
+                _lastGenerationTime = Time.unscaledTime;
+                
+                var chunkSize = new int3(_worldDescriptor.ChunkSize.x, _worldDescriptor.ChunkSize.y, _worldDescriptor.ChunkSize.z);
+                var voxelSize = new float3(_worldDescriptor.VoxelSize.x, _worldDescriptor.VoxelSize.y, _worldDescriptor.VoxelSize.z);
+                var chunkGlobalSize = chunkSize * voxelSize;
+                    
+                foreach (var chunkPosition in _toGenerate.OrderBy(chunkPosition => math.distance(_generationOrigin.position, new int3(chunkPosition.x, chunkPosition.y, chunkPosition.z) * chunkGlobalSize + 0.5f * chunkGlobalSize)))
+                    StartGenerationTask(chunkPosition);
+                _toGenerate.Clear();
+            }
         }
 
         private void PrepareAtlasData()
@@ -96,6 +129,12 @@ namespace TravkinGames.Voxels
             _voxelVariantsSideTextureIndex = new NativeArray<int>(_worldDescriptor.VoxelAtlas.VoxelVariantsSideTextureIndex.Length, Allocator.Persistent);
             for (int i = 0; i < _worldDescriptor.VoxelAtlas.VoxelVariantsSideTextureIndex.Length; i++)
                 _voxelVariantsSideTextureIndex[i] = _worldDescriptor.VoxelAtlas.VoxelVariantsSideTextureIndex[i];
+        }
+
+        private void PrepareVoxelsData()
+        {
+            for (var i = 0; i < _worldDescriptor.VoxelDatabase.GetCount(); i++)
+                _voxelToIndex.Add(_worldDescriptor.VoxelDatabase[i], (byte) i);
         }
 
         private void DisposeAtlasData()
@@ -126,7 +165,8 @@ namespace TravkinGames.Voxels
             _activeChunkViews = new Dictionary<Vector3Int, ChunkView>();
             _freeChunkViews = new Queue<ChunkView>();
             
-            _chunks ??= new Dictionary<Vector3Int, VoxelTerrainChunk>();
+            _chunksData ??= new Dictionary<Vector3Int, VoxelTerrainChunk>();
+            _generatedChunks ??= new HashSet<Vector3Int>();
             
             var atlasMaterials = _worldDescriptor.VoxelAtlas.AtlasMaterials;
             var t = 2f * _renderDistance + 1;
@@ -166,45 +206,97 @@ namespace TravkinGames.Voxels
                 GenerateChunk(new Vector3Int(x, y, z));
         }
 
-        private VoxelTerrainChunk GenerateChunk(Vector3Int chunkPosition)
+        private void GenerateChunk(Vector3Int chunkPosition)
         {
-            var chunk = new VoxelTerrainChunk(_worldDescriptor.ChunkSize);
-            var chunkOffset = new Vector3(
-                chunkPosition.x * _worldDescriptor.VoxelSize.x * _worldDescriptor.ChunkSize.x,
-                chunkPosition.y * _worldDescriptor.VoxelSize.y * _worldDescriptor.ChunkSize.y,
-                chunkPosition.z * _worldDescriptor.VoxelSize.z * _worldDescriptor.ChunkSize.z
-            );
-
-            for (var x = 0; x < _worldDescriptor.ChunkSize.x; x++)
-            for (var y = 0; y < _worldDescriptor.ChunkSize.y; y++)
-            for (var z = 0; z < _worldDescriptor.ChunkSize.z; z++)
+            if (!_generatedChunks.Add(chunkPosition)) return;
+            _toGenerate.Add(chunkPosition);
+        }
+        
+        private void StartGenerationTask(Vector3Int chunkPosition)
+        {
+            var task = Task.Factory.StartNew<(Vector3Int, VoxelTerrainChunk)>(() =>
             {
-                var chunkVoxelPosition = new Vector3Int(x, y, z);
-                var globalVoxelPosition = new Vector3Int(x, y, z) + chunkOffset;
+                var chunk = new VoxelTerrainChunk(_worldDescriptor.ChunkSize);
+                var chunkOffset = new Vector3(
+                    chunkPosition.x * _worldDescriptor.VoxelSize.x * _worldDescriptor.ChunkSize.x,
+                    chunkPosition.y * _worldDescriptor.VoxelSize.y * _worldDescriptor.ChunkSize.y,
+                    chunkPosition.z * _worldDescriptor.VoxelSize.z * _worldDescriptor.ChunkSize.z
+                );
+
+                for (var x = 0; x < _worldDescriptor.ChunkSize.x; x++)
+                for (var y = 0; y < _worldDescriptor.ChunkSize.y; y++)
+                for (var z = 0; z < _worldDescriptor.ChunkSize.z; z++)
+                {
+                    var chunkVoxelPosition = new Vector3Int(x, y, z);
+                    var globalVoxelPosition = new Vector3Int(x, y, z) + chunkOffset;
                 
-                var voxelBiomeState = _worldDescriptor.BiomeMapGenerator.GetVoxelBiomeState(_worldDescriptor.Seed, globalVoxelPosition);
-                var bestBiome = voxelBiomeState.BestBiome;
-                var bestVoxel = bestBiome.GetVoxel(_worldDescriptor.Seed, globalVoxelPosition);
-                var noiseSum = 0f;
-                for (var i = 0; i < voxelBiomeState.AllBiomes.Length; i++)
-                    noiseSum += voxelBiomeState.AllBiomes[i].Weight
-                                * voxelBiomeState.AllBiomes[i].BiomeDescriptor.LandscapeNoise.GetNoiseWithSeed(_worldDescriptor.Seed, globalVoxelPosition.x, globalVoxelPosition.y, globalVoxelPosition.z);
-                noiseSum /= voxelBiomeState.AllBiomes.Length;
+                    var voxelBiomeState = _worldDescriptor.BiomeMapGenerator.GetVoxelBiomeState(_worldDescriptor.Seed, globalVoxelPosition);
+                    var bestBiome = voxelBiomeState.BestBiome;
+                    var bestVoxel = bestBiome.GetVoxel(_worldDescriptor.Seed, globalVoxelPosition);
+                    var noiseSum = 0f;
+                    for (var i = 0; i < voxelBiomeState.AllBiomes.Length; i++)
+                        noiseSum += voxelBiomeState.AllBiomes[i].Weight
+                                    * voxelBiomeState.AllBiomes[i].BiomeDescriptor.LandscapeNoise.GetNoiseWithSeed(_worldDescriptor.Seed, globalVoxelPosition.x, globalVoxelPosition.y, globalVoxelPosition.z);
+                    noiseSum /= voxelBiomeState.AllBiomes.Length;
 
-                if (bestBiome.IsVoxelExists(globalVoxelPosition, noiseSum)) 
-                    chunk.SetVoxel(chunkVoxelPosition, (byte)_worldDescriptor.VoxelDatabase.GetIndexOf(bestVoxel));
-            }
+                    if (bestBiome.IsVoxelExists(globalVoxelPosition, noiseSum)) 
+                        chunk.SetVoxel(chunkVoxelPosition, _voxelToIndex[bestVoxel]);
+                }
 
-            _chunks.Add(chunkPosition, chunk);
-            return chunk;
+                return (chunkPosition, chunk);
+            });
+            _chunkGenerationTasks.Enqueue(task);
+            _generatedChunks.Add(chunkPosition);
         }
 
-        private ChunkView ActivateChunk(Vector3Int chunkPosition)
+        private void ActivateChunk(Vector3Int chunkPosition)
         {
+            if (!_chunksData.ContainsKey(chunkPosition))
+            {
+                GenerateChunk(chunkPosition);
+                return;
+            }
+            
+            if (!_chunksData.ContainsKey(chunkPosition + Vector3Int.left))
+            {
+                GenerateChunk(chunkPosition + Vector3Int.left);
+                return;
+            }
+            
+            if (!_chunksData.ContainsKey(chunkPosition + Vector3Int.right))
+            {
+                GenerateChunk(chunkPosition + Vector3Int.right);
+                return;
+            }
+            
+            if (!_chunksData.ContainsKey(chunkPosition + Vector3Int.forward))
+            {
+                GenerateChunk(chunkPosition + Vector3Int.forward);
+                return;
+            }
+            
+            if (!_chunksData.ContainsKey(chunkPosition + Vector3Int.back))
+            {
+                GenerateChunk(chunkPosition + Vector3Int.back);
+                return;
+            }
+
+            if (!_chunksData.ContainsKey(chunkPosition + Vector3Int.up))
+            {
+                GenerateChunk(chunkPosition + Vector3Int.up);
+                return;
+            }
+            
+            if (!_chunksData.ContainsKey(chunkPosition + Vector3Int.down))
+            {
+                GenerateChunk(chunkPosition + Vector3Int.down);
+                return;
+            }
+            
             var chunkView = _freeChunkViews.Dequeue();
-            chunkView.MeshRenderer.enabled = true;
             _activeChunkViews.Add(chunkPosition, chunkView);
             chunkView.Mesh = GenerateChunkMesh(chunkView.Mesh, chunkPosition, out var meshVerticesCount);
+            chunkView.MeshRenderer.enabled = true;
             chunkView.MeshCollider.sharedMesh = chunkView.Mesh;
             chunkView.MeshCollider.enabled = meshVerticesCount > 0;
             var chunkOffset = new Vector3(
@@ -213,7 +305,6 @@ namespace TravkinGames.Voxels
                 chunkPosition.z * _worldDescriptor.VoxelSize.z * _worldDescriptor.ChunkSize.z
             );
             chunkView.MeshRenderer.transform.position = chunkOffset;
-            return chunkView;
         }
         
         private void DeactivateChunk(Vector3Int chunkPosition)
@@ -226,24 +317,19 @@ namespace TravkinGames.Voxels
             _freeChunkViews.Enqueue(chunkView);
         }
 
-        private VoxelTerrainChunk GetOrGenerateChunk(Vector3Int chunkPosition)
-        {
-            return _chunks.TryGetValue(chunkPosition, out var chunk) ? chunk : GenerateChunk(chunkPosition);
-        }
-
         private Mesh GenerateChunkMesh(Mesh mesh, Vector3Int chunkPosition, out int meshVerticesCount)
         {
             // Calculate mesh parameters
             var calculateMeshParametersJob = new CalculateMeshParametersJob()
             {
-                CurrentVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition),
+                CurrentVoxelTerrainChunk = _chunksData[chunkPosition],
                 ChunkSize = new int3(_worldDescriptor.ChunkSize.x, _worldDescriptor.ChunkSize.y, _worldDescriptor.ChunkSize.z),
-                TopNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, 1, 0)),
-                BottomNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, -1, 0)),
-                LeftNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(-1, 0, 0)),
-                RightNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(1, 0, 0)),
-                FrontNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, 0, 1)),
-                BackNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, 0, -1)),
+                TopNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, 1, 0)],
+                BottomNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, -1, 0)],
+                LeftNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(-1, 0, 0)],
+                RightNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(1, 0, 0)],
+                FrontNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, 0, 1)],
+                BackNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, 0, -1)],
                 ResultVerticesCount = new NativeArray<int>(6, Allocator.TempJob),
                 ResultTriangleIndicesCount = new NativeArray<int>(6, Allocator.TempJob)
             };
@@ -286,22 +372,21 @@ namespace TravkinGames.Voxels
             meshData.SetIndexBufferParams(triangleIndicesCount, IndexFormat.UInt16);
 
             // Calculate mesh grid
-            var chunkPositionInt3 = new int3(chunkPosition.x, chunkPosition.y, chunkPosition.z);
             var chunkSize = new int3(_worldDescriptor.ChunkSize.x, _worldDescriptor.ChunkSize.y, _worldDescriptor.ChunkSize.z);
             var voxelSize = new float3(_worldDescriptor.VoxelSize.x, _worldDescriptor.VoxelSize.y, _worldDescriptor.VoxelSize.z);
             var chunkGlobalSize = chunkSize * voxelSize;
-            var chunkGlobalOffset = chunkPositionInt3 * chunkGlobalSize;
+            
             var calculateMeshGridJob = new CalculateMeshGridJob
             {
-                CurrentVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition),
+                CurrentVoxelTerrainChunk = _chunksData[chunkPosition],
                 ChunkSize = chunkSize,
                 VoxelSize = voxelSize,
-                TopNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, 1, 0)),
-                BottomNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, -1, 0)),
-                LeftNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(-1, 0, 0)),
-                RightNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(1, 0, 0)),
-                FrontNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, 0, 1)),
-                BackNeighbourVoxelTerrainChunk = GetOrGenerateChunk(chunkPosition + new Vector3Int(0, 0, -1)),
+                TopNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, 1, 0)],
+                BottomNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, -1, 0)],
+                LeftNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(-1, 0, 0)],
+                RightNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(1, 0, 0)],
+                FrontNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, 0, 1)],
+                BackNeighbourVoxelTerrainChunk = _chunksData[chunkPosition + new Vector3Int(0, 0, -1)],
                 VerticesCount = calculateMeshParametersJob.ResultVerticesCount,
                 TriangleIndicesCount = calculateMeshParametersJob.ResultTriangleIndicesCount,
                 Positions = meshData.GetVertexData<float3>(0),
