@@ -29,13 +29,26 @@ namespace TravkinGames.Voxels
                 Redraw();
             }
             
+            EditorGUI.BeginDisabledGroup(((NoiseGenerator)target).IsBaked);
             EditorGUI.BeginChangeCheck();
             base.OnInspectorGUI();
             if (EditorGUI.EndChangeCheck()) 
                 Redraw();
+            EditorGUI.EndDisabledGroup();
 
             if (GUILayout.Button("Normalize"))
                 ((NoiseGenerator)target).Normalize();
+
+            if (((NoiseGenerator)target).IsBaked)
+            {
+                if (GUILayout.Button("Clear Baked Noise"))
+                    ((NoiseGenerator)target).ClearBakedData();
+            }
+            else
+            {
+                if (GUILayout.Button("Bake Noise"))
+                    ((NoiseGenerator)target).Bake();
+            }
         }
 
         public override void OnPreviewGUI(Rect r, GUIStyle background)

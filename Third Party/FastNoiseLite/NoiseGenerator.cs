@@ -34,10 +34,18 @@ namespace TravkinGames.Voxels
         [Space] 
         [Header("Post-Proccessing")] 
         public List<PostProcessingStep> Steps;
+
+        [Space] 
+        [Header("Baking")] 
+        [ReadOnly, SerializeField] private bool _baked;
+        [SerializeField] private Vector3Int _bakingResolution = new Vector3Int(256, 256, 256);
+        [HideInInspector] [SerializeField] private byte[] _bakedNoise;
         
         [HideInInspector] [SerializeField] private Vector2 _minMaxNoise = new Vector2(float.MaxValue, float.MinValue);
 
         private FastNoiseLite _noiseGenerator = new FastNoiseLite();
+
+        public bool IsBaked => _baked;
 
         [Button("Normalize")]
         public override void Normalize()
@@ -46,15 +54,53 @@ namespace TravkinGames.Voxels
             _minMaxNoise = _noiseGenerator.NormalizeNoise(new Vector2(iterations, iterations));
         }
         
+        [Button("Bake Noise")]
+        public void Bake()
+        {
+            _bakedNoise = new byte[_bakingResolution.x * _bakingResolution.y * _bakingResolution.z];
+            
+            for (var x = 0; x < _bakingResolution.x; x++)
+            for (var y = 0; y < _bakingResolution.y; y++)
+            for (var z = 0; z < _bakingResolution.z; z++)
+            {
+                var noise = GetNoise(x, y, z);
+                _bakedNoise[x + y * _bakingResolution.x + z * _bakingResolution.x * _bakingResolution.y] = (byte) (Mathf.Clamp01(noise) * 255);
+            }
+            
+            _baked = true;
+        }
+
+        [Button("Clear Baked Data")]
+        public void ClearBakedData()
+        {
+            _bakedNoise = null;
+            _baked = false;
+        }
         
         public override float GetNoise(float x, float y, float z)
         {
+            if (_baked)
+            {
+                var xInt = (int) Mathf.Repeat(Mathf.FloorToInt(x), _bakingResolution.x);
+                var yInt = (int) Mathf.Repeat(Mathf.FloorToInt(y), _bakingResolution.y);
+                var zInt = (int) Mathf.Repeat(Mathf.FloorToInt(z), _bakingResolution.z);
+                return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
+            }
+            
             _noiseGenerator.ApplySettings(this);
             return CalculateNoise(x, y, z);
         }
 
         public override float GetNoiseWithSeed(int seed, float x, float y, float z)
         {
+            if (_baked)
+            {
+                var xInt = (int) Mathf.Repeat(Mathf.FloorToInt(x), _bakingResolution.x);
+                var yInt = (int) Mathf.Repeat(Mathf.FloorToInt(y), _bakingResolution.y);
+                var zInt = (int) Mathf.Repeat(Mathf.FloorToInt(z), _bakingResolution.z);
+                return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
+            }
+            
             _noiseGenerator.ApplySettings(this);
             _noiseGenerator.SetSeed(seed);
             return CalculateNoise(x, y, z);
@@ -62,6 +108,14 @@ namespace TravkinGames.Voxels
 
         private float CalculateNoise(float x, float y, float z)
         {
+            if (_baked)
+            {
+                var xInt = (int) Mathf.Repeat(Mathf.FloorToInt(x), _bakingResolution.x);
+                var yInt = (int) Mathf.Repeat(Mathf.FloorToInt(y), _bakingResolution.y);
+                var zInt = (int) Mathf.Repeat(Mathf.FloorToInt(z), _bakingResolution.z);
+                return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
+            }
+            
             var noise = _noiseGenerator.GetNormalizedNoise(x, y, z, _minMaxNoise);
             foreach (var step in Steps) 
                 noise = step.Execute(noise);

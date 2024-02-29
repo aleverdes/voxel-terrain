@@ -504,8 +504,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _worldDescriptor: {fileID: 11400000, guid: 9a300ee19236042bc9be39b16d0cdf1d, type: 2}
   _generationOrigin: {fileID: 1566076761}
-  _renderDistance: 1
-  _maxChunksCount: 27
+  _renderDistance: 4
 --- !u!1 &1765245664
 GameObject:
   m_ObjectHideFlags: 0
