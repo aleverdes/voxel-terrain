@@ -12,8 +12,15 @@ namespace TravkinGames.Voxels
     public class VoxelTerrain : MonoBehaviour
     {
         [SerializeField] private WorldDescriptor _worldDescriptor;
+        
+        [Header("Generation Settings")]
         [SerializeField] private Transform _generationOrigin;
+        [SerializeField] private bool _generationByAngle;
+        
+        [Header("Render Settings")]
         [SerializeField] private int _renderDistance = 1;
+        [SerializeField] private float _renderAngle = 60f;
+        [SerializeField] private float _backwardRenderDistance = 1f;
         
         private Dictionary<Vector3Int, VoxelTerrainChunk> _chunksData;
         private HashSet<Vector3Int> _generatedChunks;
@@ -34,6 +41,7 @@ namespace TravkinGames.Voxels
         private readonly List<Task<(Vector3Int, VoxelTerrainChunk)>> _chunkGenerationTasks = new();
         private readonly List<Vector3Int> _toGenerate = new();
         private float _lastGenerationTime;
+        private float _chunkDiagonal;
         
         private void Awake()
         {
@@ -68,6 +76,14 @@ namespace TravkinGames.Voxels
             for (var z = -_renderDistance; z <= _renderDistance; z++)
             {
                 var chunkPosition = originChunkPosition + new Vector3Int(x, y, z);
+                var chunkGlobalCenterPosition = new Vector3(
+                    (chunkPosition.x + 0.5f) * _worldDescriptor.ChunkSize.x * _worldDescriptor.VoxelSize.x ,
+                    (chunkPosition.y + 0.5f) * _worldDescriptor.ChunkSize.y * _worldDescriptor.VoxelSize.y,
+                    (chunkPosition.z + 0.5f) * _worldDescriptor.ChunkSize.z * _worldDescriptor.VoxelSize.z
+                );
+                var backwardGenerationOrigin = _generationOrigin.position - _generationOrigin.forward * (_chunkDiagonal * _backwardRenderDistance);
+                if (_generationByAngle && Vector3.Angle(_generationOrigin.forward, chunkGlobalCenterPosition - backwardGenerationOrigin) > _renderAngle)
+                    continue;
                 
                 if (!_chunksData.ContainsKey(chunkPosition)) 
                     GenerateChunk(chunkPosition);
@@ -164,6 +180,13 @@ namespace TravkinGames.Voxels
                     Destroy(chunkView.MeshFilter.gameObject);
                 }
             
+            
+            _chunkDiagonal = new Vector3(
+                _worldDescriptor.ChunkSize.x * _worldDescriptor.VoxelSize.x,
+                _worldDescriptor.ChunkSize.y * _worldDescriptor.VoxelSize.y,
+                _worldDescriptor.ChunkSize.z * _worldDescriptor.VoxelSize.z
+            ).magnitude;
+            
             _activeChunkViews = new Dictionary<Vector3Int, ChunkView>();
             _freeChunkViews = new Queue<ChunkView>();
             
@@ -174,15 +197,17 @@ namespace TravkinGames.Voxels
             var t = 2f * _renderDistance + 1;
             for (var i = 0; i < t * t * t * 2; i++)
             {
-                var chunk = new GameObject("Chunk #" + i);
-                chunk.transform.SetParent(transform);
+                var chunkGameObject = new GameObject("Chunk #" + i);
+                chunkGameObject.transform.SetParent(transform);
+                chunkGameObject.hideFlags = HideFlags.HideInHierarchy;
+                
                 var mesh = new Mesh
                 {
                     name = "Chunk #" + i
                 };
-                var meshFilter = chunk.AddComponent<MeshFilter>();
-                var meshRenderer = chunk.AddComponent<MeshRenderer>();
-                var meshCollider = chunk.AddComponent<MeshCollider>();
+                var meshFilter = chunkGameObject.AddComponent<MeshFilter>();
+                var meshRenderer = chunkGameObject.AddComponent<MeshRenderer>();
+                var meshCollider = chunkGameObject.AddComponent<MeshCollider>();
                 
                 meshRenderer.SetMaterials(atlasMaterials);
 
@@ -230,7 +255,10 @@ namespace TravkinGames.Voxels
                 for (var z = 0; z < _worldDescriptor.ChunkSize.z; z++)
                 {
                     var chunkVoxelPosition = new Vector3Int(x, y, z);
-                    var globalVoxelPosition = (chunkVoxelPosition + chunkOffset) * new float3(_worldDescriptor.VoxelSize);
+                    var globalVoxelPosition = chunkOffset + new Vector3(
+                            chunkVoxelPosition.x * _worldDescriptor.VoxelSize.x,
+                            chunkVoxelPosition.y * _worldDescriptor.VoxelSize.y,
+                            chunkVoxelPosition.z * _worldDescriptor.VoxelSize.z);
                 
                     var voxelBiomeState = _worldDescriptor.BiomeMapGenerator.GetVoxelBiomeState(_worldDescriptor.Seed, globalVoxelPosition);
                     
