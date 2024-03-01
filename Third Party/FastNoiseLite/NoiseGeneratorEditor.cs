@@ -11,6 +11,8 @@ namespace TravkinGames.Voxels
         private Vector2Int _outputTextureSize = new Vector2Int(256, 256);
 
         public override bool HasPreviewGUI() => true;
+        
+        private NoiseGenerator _target => (NoiseGenerator) target;
 
         private void OnEnable()
         {
@@ -29,7 +31,7 @@ namespace TravkinGames.Voxels
                 Redraw();
             }
             
-            EditorGUI.BeginDisabledGroup(((NoiseGenerator)target).IsBaked);
+            EditorGUI.BeginDisabledGroup(_target.IsBaked);
             EditorGUI.BeginChangeCheck();
             base.OnInspectorGUI();
             if (EditorGUI.EndChangeCheck()) 
@@ -37,17 +39,29 @@ namespace TravkinGames.Voxels
             EditorGUI.EndDisabledGroup();
 
             if (GUILayout.Button("Normalize"))
-                ((NoiseGenerator)target).Normalize();
+            {
+                _target.Normalize();
+                EditorUtility.SetDirty(_target);
+            }
 
-            if (((NoiseGenerator)target).IsBaked)
+            if (_target.SettingApplied && GUILayout.Button("Reset Noise Generator Settings"))
+                _target.ResetNoiseGeneratorSettings();
+
+            if (_target.IsBaked)
             {
                 if (GUILayout.Button("Clear Baked Noise"))
-                    ((NoiseGenerator)target).ClearBakedData();
+                {
+                    _target.ClearBakedData();
+                    EditorUtility.SetDirty(_target);
+                }
             }
             else
             {
                 if (GUILayout.Button("Bake Noise"))
-                    ((NoiseGenerator)target).Bake();
+                {
+                    _target.Bake();
+                    EditorUtility.SetDirty(_target);
+                }
             }
         }
 
@@ -73,7 +87,7 @@ namespace TravkinGames.Voxels
 
         private Color GetNoiseColor(float x, float y)
         {
-            var noise = ((NoiseGenerator) target).GetNoise(x, y);
+            var noise = _target.GetNoise(x, y);
             var result = Color.white * noise;
             result.a = 1f;
             return result;

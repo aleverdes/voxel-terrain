@@ -44,14 +44,22 @@ namespace TravkinGames.Voxels
         [HideInInspector] [SerializeField] private Vector2 _minMaxNoise = new Vector2(float.MaxValue, float.MinValue);
 
         private FastNoiseLite _noiseGenerator = new FastNoiseLite();
+        private bool _settingsApplied;
 
         public bool IsBaked => _baked;
+        public bool SettingApplied => _settingsApplied;
 
         [Button("Normalize")]
         public override void Normalize()
         {
             const int iterations = 256;
             _minMaxNoise = _noiseGenerator.NormalizeNoise(new Vector2(iterations, iterations));
+        }
+
+        [Button("Reset Noise Generator Settings")]
+        public void ResetNoiseGeneratorSettings()
+        {
+            _settingsApplied = false;
         }
         
         [Button("Bake Noise")]
@@ -87,7 +95,11 @@ namespace TravkinGames.Voxels
                 return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
             }
             
-            _noiseGenerator.ApplySettings(this);
+            if (!_settingsApplied)
+            {
+                _noiseGenerator.ApplySettings(this);
+                _settingsApplied = true;
+            }
             return CalculateNoise(x, y, z);
         }
 
@@ -100,8 +112,12 @@ namespace TravkinGames.Voxels
                 var zInt = (int) Mathf.Repeat(Mathf.FloorToInt(z), _bakingResolution.z);
                 return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
             }
-            
-            _noiseGenerator.ApplySettings(this);
+
+            if (!_settingsApplied)
+            {
+                _noiseGenerator.ApplySettings(this);
+                _settingsApplied = true;
+            }
             _noiseGenerator.SetSeed(seed);
             return CalculateNoise(x, y, z);
         }
