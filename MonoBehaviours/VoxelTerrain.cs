@@ -29,12 +29,11 @@ namespace TravkinGames.Voxels
         private NativeArray<int> _voxelVariantsTopTextureIndex;
         private NativeArray<int> _voxelVariantsBottomTextureIndex;
         private NativeArray<int> _voxelVariantsSideTextureIndex;
+        private readonly Dictionary<VoxelDescriptor, byte> _voxelToIndex = new();
         
-        private readonly Queue<Task<(Vector3Int, VoxelTerrainChunk)>> _chunkGenerationTasks = new();
-
+        private readonly List<Task<(Vector3Int, VoxelTerrainChunk)>> _chunkGenerationTasks = new();
         private readonly List<Vector3Int> _toGenerate = new();
         private float _lastGenerationTime;
-        private readonly Dictionary<VoxelDescriptor, byte> _voxelToIndex = new();
         
         private void Awake()
         {
@@ -86,13 +85,16 @@ namespace TravkinGames.Voxels
                     ActivateChunk(chunkPosition);
             
             if (_chunkGenerationTasks.Count > 0)
-                if (_chunkGenerationTasks.Peek().IsCompleted)
-                {
-                    var (chunkPosition, chunk) = _chunkGenerationTasks.Dequeue().Result;
-                    _chunksData.Add(chunkPosition, chunk);
-                    if (_toActivateChunks.Contains(chunkPosition))
-                        ActivateChunk(chunkPosition);
-                }
+                for (var i = _chunkGenerationTasks.Count - 1; i >= 0; i--)
+                    if (_chunkGenerationTasks[i].IsCompleted)
+                    {
+                        var (chunkPosition, chunk) = _chunkGenerationTasks[i].Result;
+                        _chunksData.Add(chunkPosition, chunk);
+                        if (_toActivateChunks.Contains(chunkPosition))
+                            ActivateChunk(chunkPosition);
+                        _chunkGenerationTasks.RemoveAt(i);
+                    }
+                
 
             if (Time.unscaledTime - _lastGenerationTime > 0.1f)
             {
@@ -228,24 +230,28 @@ namespace TravkinGames.Voxels
                 for (var z = 0; z < _worldDescriptor.ChunkSize.z; z++)
                 {
                     var chunkVoxelPosition = new Vector3Int(x, y, z);
-                    var globalVoxelPosition = new Vector3Int(x, y, z) + chunkOffset;
+                    var globalVoxelPosition = (chunkVoxelPosition + chunkOffset) * new float3(_worldDescriptor.VoxelSize);
                 
                     var voxelBiomeState = _worldDescriptor.BiomeMapGenerator.GetVoxelBiomeState(_worldDescriptor.Seed, globalVoxelPosition);
+                    
                     var bestBiome = voxelBiomeState.BestBiome;
                     var bestVoxel = bestBiome.GetVoxel(_worldDescriptor.Seed, globalVoxelPosition);
+
                     var noiseSum = 0f;
                     for (var i = 0; i < voxelBiomeState.AllBiomes.Length; i++)
-                        noiseSum += voxelBiomeState.AllBiomes[i].Weight
-                                    * voxelBiomeState.AllBiomes[i].BiomeDescriptor.LandscapeNoise.GetNoiseWithSeed(_worldDescriptor.Seed, globalVoxelPosition.x, globalVoxelPosition.y, globalVoxelPosition.z);
-                    noiseSum /= voxelBiomeState.AllBiomes.Length;
-
-                    if (bestBiome.IsVoxelExists(globalVoxelPosition, noiseSum)) 
+                    {
+                        var biome = voxelBiomeState.AllBiomes[i];
+                        noiseSum += biome.Weight
+                                    * biome.BiomeDescriptor.LandscapeNoise.GetNoiseWithSeed(_worldDescriptor.Seed, globalVoxelPosition.x, globalVoxelPosition.y, globalVoxelPosition.z);
+                    }
+                    
+                    if (bestBiome.IsVoxelExists(globalVoxelPosition, noiseSum / voxelBiomeState.AllBiomes.Length))
                         chunk.SetVoxel(chunkVoxelPosition, _voxelToIndex[bestVoxel]);
                 }
 
                 return (chunkPosition, chunk);
             });
-            _chunkGenerationTasks.Enqueue(task);
+            _chunkGenerationTasks.Add(task);
             _generatedChunks.Add(chunkPosition);
         }
 

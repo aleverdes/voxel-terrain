@@ -39,15 +39,15 @@ namespace TravkinGames.Voxels
         
         public VoxelDescriptor GetVoxel(int seed, Vector3 position)
         {
-            var noise = _landscapeNoise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
             var bestVoxel = _defaultVoxel;
             var bestNoise = float.MinValue;
             foreach (var voxelMap in _voxels)
             {
-                if (voxelMap.Noise.GetNoiseWithSeed(seed, position.x, position.y, position.z) > bestNoise)
+                var currentNoise = voxelMap.Noise.GetNoiseWithSeed(seed, position.x, position.y, position.z);
+                if (currentNoise > bestNoise)
                 {
                     bestVoxel = voxelMap.Voxel;
-                    bestNoise = noise;
+                    bestNoise = currentNoise;
                 }
             }
 

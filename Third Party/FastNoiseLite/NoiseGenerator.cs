@@ -117,8 +117,9 @@ namespace TravkinGames.Voxels
             }
             
             var noise = _noiseGenerator.GetNormalizedNoise(x, y, z, _minMaxNoise);
-            foreach (var step in Steps) 
-                noise = step.Execute(noise);
+            for (var i = 0; i < Steps.Count; i++) 
+                noise = Steps[i].Execute(noise);
+
             return noise;
         }
 

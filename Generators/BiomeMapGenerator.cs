@@ -27,11 +27,11 @@ namespace TravkinGames.Voxels
             
             var target = new Vector3(temperature, humidity, altitude);
             
-            var i = 0;
             var sum = 0f;
             var bestWeight = float.MinValue;
-            foreach (var biome in _biomeDatabase.GetElements())
+            for (var i = 0; i < _biomeDatabase.GetCount(); i++)
             {
+                var biome = _biomeDatabase[i];
                 var current = new Vector3(biome.Temperature, biome.Humidity, biome.Altitude);
                 var weight = Vector3.Distance(current, target);
                 voxelBiomeState.AllBiomes[i] = new BiomeWeight()
@@ -47,7 +47,6 @@ namespace TravkinGames.Voxels
                 }
                 
                 sum += weight;
-                i++;
             }
 
             for (var j = 0; j < voxelBiomeState.AllBiomes.Length; j++) 
