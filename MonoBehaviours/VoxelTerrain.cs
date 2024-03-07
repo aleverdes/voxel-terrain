@@ -48,8 +48,6 @@ namespace TravkinGames.Voxels
             PrepareAtlasData();
             PrepareVoxelsData();
             PrepareChunks();
-            if (_worldDescriptor.IsPregenerationEnabled)
-                PregenerateChunks();
         }
 
         private void OnDestroy()
@@ -76,6 +74,17 @@ namespace TravkinGames.Voxels
             for (var z = -_renderDistance; z <= _renderDistance; z++)
             {
                 var chunkPosition = originChunkPosition + new Vector3Int(x, y, z);
+
+                if (!_worldDescriptor.IsInfinite)
+                {
+                    var ws = _worldDescriptor.WorldSizeInChunks;
+                    if (chunkPosition.x < 0 || chunkPosition.x >= ws.x || chunkPosition.y < 0 || chunkPosition.y >= ws.y || chunkPosition.z < 0 || chunkPosition.z >= ws.z)
+                    {
+                        StartGenerationEmptyChunkTask(chunkPosition);
+                        continue;
+                    }
+                }
+                
                 var chunkGlobalCenterPosition = new Vector3(
                     (chunkPosition.x + 0.5f) * _worldDescriptor.ChunkSize.x * _worldDescriptor.VoxelSize.x ,
                     (chunkPosition.y + 0.5f) * _worldDescriptor.ChunkSize.y * _worldDescriptor.VoxelSize.y,
@@ -121,7 +130,7 @@ namespace TravkinGames.Voxels
                 var chunkGlobalSize = chunkSize * voxelSize;
                     
                 foreach (var chunkPosition in _toGenerate.OrderBy(chunkPosition => math.distance(_generationOrigin.position, new int3(chunkPosition.x, chunkPosition.y, chunkPosition.z) * chunkGlobalSize + 0.5f * chunkGlobalSize)))
-                    StartGenerationTask(chunkPosition);
+                    StartGenerationChunkTask(chunkPosition);
                 _toGenerate.Clear();
             }
         }
@@ -192,10 +201,26 @@ namespace TravkinGames.Voxels
             
             _chunksData ??= new Dictionary<Vector3Int, VoxelTerrainChunk>();
             _generatedChunks ??= new HashSet<Vector3Int>();
+
+            if (_worldDescriptor.IsInfinite)
+            {
+                var rd = 2f * _renderDistance + 1;
+                var t = rd * rd * rd * 2;
+                for (var i = 0; i < t; i++)
+                    PrepareChunk(i);
+            }
+            else
+            {
+                var ws = _worldDescriptor.WorldSizeInChunks.x * _worldDescriptor.WorldSizeInChunks.y * _worldDescriptor.WorldSizeInChunks.z;
+                var rd = 2f * _renderDistance + 1;
+                var t = Mathf.Max(rd * rd * rd * 2, ws);
+                for (var i = 0; i < t; i++)
+                    PrepareChunk(i);
+            }
+
+            return;
             
-            var atlasMaterials = _worldDescriptor.VoxelAtlas.AtlasMaterials;
-            var t = 2f * _renderDistance + 1;
-            for (var i = 0; i < t * t * t * 2; i++)
+            void PrepareChunk(int i)
             {
                 var chunkGameObject = new GameObject("Chunk #" + i);
                 chunkGameObject.transform.SetParent(transform);
@@ -209,7 +234,7 @@ namespace TravkinGames.Voxels
                 var meshRenderer = chunkGameObject.AddComponent<MeshRenderer>();
                 var meshCollider = chunkGameObject.AddComponent<MeshCollider>();
                 
-                meshRenderer.SetMaterials(atlasMaterials);
+                meshRenderer.SetMaterials(_worldDescriptor.VoxelAtlas.AtlasMaterials);
 
                 meshFilter.sharedMesh = mesh;
                 meshCollider.sharedMesh = null;
@@ -223,23 +248,19 @@ namespace TravkinGames.Voxels
             }
         }
 
-        private void PregenerateChunks()
-        {
-            var origin = _worldDescriptor.PregenerationOriginPosition;
-            var size = _worldDescriptor.PregenerationSize;
-            for (var x = origin.x - size.x; x <= origin.x + size.x; x++)
-            for (var y = origin.y - size.y; y <= origin.y + size.y; y++)
-            for (var z = origin.z - size.z; z <= origin.z + size.z; z++)
-                GenerateChunk(new Vector3Int(x, y, z));
-        }
-
         private void GenerateChunk(Vector3Int chunkPosition)
         {
             if (!_generatedChunks.Add(chunkPosition)) return;
             _toGenerate.Add(chunkPosition);
         }
+
+        private void StartGenerationEmptyChunkTask(Vector3Int chunkPosition)
+        {
+            if (_generatedChunks.Add(chunkPosition))
+                _chunksData.Add(chunkPosition, new VoxelTerrainChunk(_worldDescriptor.ChunkSize));
+        }
         
-        private void StartGenerationTask(Vector3Int chunkPosition)
+        private void StartGenerationChunkTask(Vector3Int chunkPosition)
         {
             var task = Task.Factory.StartNew<(Vector3Int, VoxelTerrainChunk)>(() =>
             {
@@ -333,6 +354,8 @@ namespace TravkinGames.Voxels
             chunkView.MeshRenderer.enabled = true;
             chunkView.MeshCollider.sharedMesh = chunkView.Mesh;
             chunkView.MeshCollider.enabled = meshVerticesCount > 0;
+            chunkView.MeshRenderer.gameObject.SetActive(true);
+            chunkView.MeshRenderer.gameObject.name = "Chunk " + chunkPosition;
             var chunkOffset = new Vector3(
                 chunkPosition.x * _worldDescriptor.VoxelSize.x * _worldDescriptor.ChunkSize.x,
                 chunkPosition.y * _worldDescriptor.VoxelSize.y * _worldDescriptor.ChunkSize.y,
@@ -347,6 +370,8 @@ namespace TravkinGames.Voxels
             chunkView.MeshRenderer.enabled = false;
             chunkView.MeshCollider.enabled = false;
             chunkView.MeshCollider.sharedMesh = null;
+            chunkView.MeshRenderer.gameObject.SetActive(false);
+            chunkView.MeshRenderer.gameObject.name = "Inactive Chunk " + chunkPosition;
             _activeChunkViews.Remove(chunkPosition);
             _freeChunkViews.Enqueue(chunkView);
         }
