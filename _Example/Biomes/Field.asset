@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 216bfe9e497f48bf97adf5f296e18431, type: 3}
   m_Name: Field
   m_EditorClassIdentifier: 
-  _biomeMapColor: {r: 0.6142852, g: 0.93333334, b: 0.31372553, a: 1}
+  _biomeMapColor: {r: 0.106677905, g: 0.26452544, b: 0.97417176, a: 1}
   _defaultVoxel: {fileID: 11400000, guid: 6c21006dc7a7846c5931ddcd05a3f5fd, type: 2}
   _voxels: []
   _landscapeNoise: {fileID: 11400000, guid: a02419afc4e18402bae74e385cddf750, type: 2}
-  _minMaxHeight: {x: 0, y: 4}
-  _temperature: 0.9352397
-  _humidity: 0.8399582
-  _altitude: 0.31522658
+  _minMaxHeight: {x: 8, y: 10}
+  _temperature: 0.106677905
+  _humidity: 0.26452544
+  _altitude: 0.97417176

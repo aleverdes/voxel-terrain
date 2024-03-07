@@ -89,15 +89,10 @@ namespace TaigaGames.Voxels
                 return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
             }
             
-            if (!_settingsApplied && Application.isPlaying)
+            if (!_settingsApplied)
             {
                 _noiseGenerator.ApplySettings(this);
                 _settingsApplied = true;
-            }
-            else if (!Application.isPlaying)
-            {
-                _noiseGenerator.ApplySettings(this);
-                _settingsApplied = false;
             }
             
             return CalculateNoise(x, y, z);
@@ -113,15 +108,10 @@ namespace TaigaGames.Voxels
                 return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
             }
 
-            if (!_settingsApplied && Application.isPlaying)
+            if (!_settingsApplied)
             {
                 _noiseGenerator.ApplySettings(this);
                 _settingsApplied = true;
-            }
-            else if (!Application.isPlaying)
-            {
-                _noiseGenerator.ApplySettings(this);
-                _settingsApplied = false;
             }
             
             _noiseGenerator.SetSeed(seed);

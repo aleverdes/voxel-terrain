@@ -62,11 +62,11 @@ namespace TaigaGames.Voxels
 
         private void Redraw()
         {
-            for (var i = -128; i < 128; i++)
-            for (var j = -128; j < 128; j++)
+            for (var x = -128; x < 128; x++)
+            for (var y = -128; y < 128; y++)
             {
-                var biomesState = _biomeMapGenerator.GetVoxelBiomeState(_seed, new Vector3Int((int) _scale * j, (int) _scale * i, 0));
-                _previewTexture.SetPixel(j, i, biomesState.BestBiome.BiomeMapColor);
+                var biomesState = _biomeMapGenerator.GetVoxelBiomeState(_seed, new Vector3Int((int) _scale * x, (int) _scale * y, 0));
+                _previewTexture.SetPixel(x, y, biomesState.BestBiome.BiomeMapColor);
             }
             _previewTexture.Apply();
         }

@@ -15,7 +15,6 @@ MonoBehaviour:
   _seed: 0
   _isInfinite: 0
   _worldSizeInChunks: {x: 8, y: 2, z: 8}
-  _pregenerationEnabled: 1
   _chunkSize: {x: 16, y: 16, z: 16}
   _biomeDatabase: {fileID: 11400000, guid: 677b2882566904c1c9cdd2ffdcd037d7, type: 2}
   _biomeMapGenerator: {fileID: 11400000, guid: b465e5fa31e8a49358052ba415088688, type: 2}
