@@ -1,5 +1,3 @@
-using System;
-using Sirenix.OdinInspector;
 using TravkinGames.Utils;
 using UnityEngine;
 

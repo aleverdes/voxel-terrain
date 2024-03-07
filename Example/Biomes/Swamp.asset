@@ -16,7 +16,7 @@ MonoBehaviour:
   _defaultVoxel: {fileID: 11400000, guid: 6cbe1ab144293484e819072e92192bd8, type: 2}
   _voxels: []
   _landscapeNoise: {fileID: 11400000, guid: fb133f5d5cdce40b2af7772e1ab338c9, type: 2}
-  _minMaxHeight: {x: 20, y: 64}
+  _minMaxHeight: {x: 4, y: 20}
   _temperature: 0.043067936
   _humidity: 0.39492553
   _altitude: 0.3988735
