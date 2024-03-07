@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CustomEditor(typeof(NoiseGenerator))]
     public class NoiseGeneratorEditor : Editor
@@ -12,7 +12,7 @@ namespace TravkinGames.Voxels
 
         public override bool HasPreviewGUI() => true;
         
-        private NoiseGenerator _target => (NoiseGenerator) target;
+        private NoiseGenerator Target => (NoiseGenerator) target;
 
         private void OnEnable()
         {
@@ -31,7 +31,7 @@ namespace TravkinGames.Voxels
                 Redraw();
             }
             
-            EditorGUI.BeginDisabledGroup(_target.IsBaked);
+            EditorGUI.BeginDisabledGroup(Target.IsBaked);
             EditorGUI.BeginChangeCheck();
             base.OnInspectorGUI();
             if (EditorGUI.EndChangeCheck()) 
@@ -40,27 +40,24 @@ namespace TravkinGames.Voxels
 
             if (GUILayout.Button("Normalize"))
             {
-                _target.Normalize();
-                EditorUtility.SetDirty(_target);
+                Target.Normalize();
+                EditorUtility.SetDirty(Target);
             }
 
-            if (_target.SettingApplied && GUILayout.Button("Reset Noise Generator Settings"))
-                _target.ResetNoiseGeneratorSettings();
-
-            if (_target.IsBaked)
+            if (Target.IsBaked)
             {
                 if (GUILayout.Button("Clear Baked Noise"))
                 {
-                    _target.ClearBakedData();
-                    EditorUtility.SetDirty(_target);
+                    Target.ClearBakedData();
+                    EditorUtility.SetDirty(Target);
                 }
             }
             else
             {
                 if (GUILayout.Button("Bake Noise"))
                 {
-                    _target.Bake();
-                    EditorUtility.SetDirty(_target);
+                    Target.Bake();
+                    EditorUtility.SetDirty(Target);
                 }
             }
         }
@@ -78,16 +75,16 @@ namespace TravkinGames.Voxels
 
         private void Redraw()
         {
-            for (var i = 0; i < _outputTextureSize.y; i++)
-            for (var j = 0; j < _outputTextureSize.x; j++)
-                _outputTexture.SetPixel(j, i, GetNoiseColor(j, i));
+            for (var x = 0; x < _outputTextureSize.x; x++)
+            for (var y = 0; y < _outputTextureSize.y; y++)
+                _outputTexture.SetPixel(x, y, GetNoiseColor(x, y));
 
             _outputTexture.Apply();
         }
 
         private Color GetNoiseColor(float x, float y)
         {
-            var noise = _target.GetNoise(x, y);
+            var noise = Target.GetNoise(x, y);
             var result = Color.white * noise;
             result.a = 1f;
             return result;

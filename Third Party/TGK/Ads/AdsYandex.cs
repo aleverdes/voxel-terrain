@@ -6,7 +6,7 @@ using UnityEngine;
 using GamePush;
 #endif
 
-namespace TravkinGames.Ads
+namespace TaigaGames.Ads
 {
     public class AdsYandex : MonoBehaviour, IAdsManager
     {

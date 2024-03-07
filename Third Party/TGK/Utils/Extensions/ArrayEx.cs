@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public static class ArrayEx
     {

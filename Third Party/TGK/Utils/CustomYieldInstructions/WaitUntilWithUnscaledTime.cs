@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     /// <summary>
     /// Custom yield instruction that waits until a condition is met or a unscaled time has passed.

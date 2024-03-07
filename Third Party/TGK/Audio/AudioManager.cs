@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace TravkinGames.Audio
+namespace TaigaGames.Audio
 {
     public class AudioManager : MonoBehaviour
     {

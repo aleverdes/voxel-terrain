@@ -1,9 +1,9 @@
-using TravkinGames.Utils;
+using TaigaGames.Utils;
 using UnityEngine;
 
-namespace TravkinGames
+namespace TaigaGames
 {
-    [CreateAssetMenu(menuName = "TravkinGames/UI/UI Animation Function Preset", fileName = "UI Animation Function Preset")]
+    [CreateAssetMenu(menuName = "TaigaGames/UI/UI Animation Function Preset", fileName = "UI Animation Function Preset")]
     public class UIAnimationPreset : ScriptableObject
     {
         [SerializeField] private float _speed = 1f;

@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     public class LocalizationEditorWindow : EditorWindow
     {

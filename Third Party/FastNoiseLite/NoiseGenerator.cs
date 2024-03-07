@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CreateAssetMenu(menuName = "Voxels/Noise/Noise Generator", fileName = "Noise Generator")]
     public class NoiseGenerator : NoiseProvider
@@ -44,22 +44,16 @@ namespace TravkinGames.Voxels
         [HideInInspector] [SerializeField] private Vector2 _minMaxNoise = new Vector2(float.MaxValue, float.MinValue);
 
         private FastNoiseLite _noiseGenerator = new FastNoiseLite();
-        private bool _settingsApplied;
 
+        private bool _settingsApplied;
+        
         public bool IsBaked => _baked;
-        public bool SettingApplied => _settingsApplied;
 
         [Button("Normalize")]
         public override void Normalize()
         {
             const int iterations = 256;
             _minMaxNoise = _noiseGenerator.NormalizeNoise(new Vector2(iterations, iterations));
-        }
-
-        [Button("Reset Noise Generator Settings")]
-        public void ResetNoiseGeneratorSettings()
-        {
-            _settingsApplied = false;
         }
         
         [Button("Bake Noise")]
@@ -95,11 +89,17 @@ namespace TravkinGames.Voxels
                 return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
             }
             
-            if (!_settingsApplied)
+            if (!_settingsApplied && Application.isPlaying)
             {
                 _noiseGenerator.ApplySettings(this);
                 _settingsApplied = true;
             }
+            else if (!Application.isPlaying)
+            {
+                _noiseGenerator.ApplySettings(this);
+                _settingsApplied = false;
+            }
+            
             return CalculateNoise(x, y, z);
         }
 
@@ -113,11 +113,17 @@ namespace TravkinGames.Voxels
                 return _bakedNoise[xInt + yInt * _bakingResolution.x + zInt * _bakingResolution.x * _bakingResolution.y] / 255f;
             }
 
-            if (!_settingsApplied)
+            if (!_settingsApplied && Application.isPlaying)
             {
                 _noiseGenerator.ApplySettings(this);
                 _settingsApplied = true;
             }
+            else if (!Application.isPlaying)
+            {
+                _noiseGenerator.ApplySettings(this);
+                _settingsApplied = false;
+            }
+            
             _noiseGenerator.SetSeed(seed);
             return CalculateNoise(x, y, z);
         }
@@ -134,7 +140,7 @@ namespace TravkinGames.Voxels
             
             var noise = _noiseGenerator.GetNormalizedNoise(x, y, z, _minMaxNoise);
             for (var i = 0; i < Steps.Count; i++) 
-                noise = Steps[i].Execute(noise);
+                noise = Steps[i].Execute(noise, _noiseGenerator.GetSeed(), x, y, z);
 
             return noise;
         }
@@ -147,8 +153,9 @@ namespace TravkinGames.Voxels
             public float Value1;
             public float Value2;
             public AnimationCurve Curve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+            public NoiseProvider Noise;
 
-            public float Execute(float input)
+            public float Execute(float input, int seed, float x, float y, float z)
             {
                 if (!Enabled)
                     return input;
@@ -167,6 +174,10 @@ namespace TravkinGames.Voxels
                     PostProcessingType.SmoothStep => Mathf.SmoothStep(Value1, Value2, input),
                     PostProcessingType.Step => input > Value1 ? 1 : 0,
                     PostProcessingType.Lerp => Mathf.Lerp(Value1, Value2, input),
+                    PostProcessingType.AddNoise => input + Noise.GetNoiseWithSeed(seed, x, y, z),
+                    PostProcessingType.AvgNoise => (input + Noise.GetNoiseWithSeed(seed, x, y, z)) * 0.5f,
+                    PostProcessingType.MinNoise => Mathf.Min(input, Noise.GetNoiseWithSeed(seed, x, y, z)),
+                    PostProcessingType.MaxNoise => Mathf.Max(input, Noise.GetNoiseWithSeed(seed, x, y, z)),
                     _ => input
                 };
             }
@@ -186,6 +197,10 @@ namespace TravkinGames.Voxels
             SmoothStep,
             Step,
             Lerp,
+            AddNoise,
+            AvgNoise,
+            MinNoise,
+            MaxNoise
         }
     }
 }

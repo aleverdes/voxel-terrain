@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CreateAssetMenu(menuName = "Voxels/Noise/Noise Combinator", fileName = "Noise Combinator")]
     public class NoiseCombinator : NoiseProvider

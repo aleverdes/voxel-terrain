@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Onboarding
+namespace TaigaGames.Onboarding
 {
     public class OnboardingFinger : MonoBehaviour
     {

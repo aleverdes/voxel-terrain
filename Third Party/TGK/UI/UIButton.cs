@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace TravkinGames
+namespace TaigaGames
 {
     [RequireComponent(typeof(RectTransform))]
     [RequireComponent(typeof(Button))]

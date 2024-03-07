@@ -1,6 +1,6 @@
 using System;
 
-namespace TravkinGames.Ads
+namespace TaigaGames.Ads
 {
     public interface IAdsManager
     {

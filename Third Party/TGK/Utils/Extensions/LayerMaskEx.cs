@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public static class LayerMaskEx
     {

@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 using UnityEditor.SceneManagement;
 #endif
 
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public static class AutoFill
     {

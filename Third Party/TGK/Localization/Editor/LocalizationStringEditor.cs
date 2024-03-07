@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     [CustomEditor(typeof(LocalizableString))]
     public class LocalizationStringEditor : Editor

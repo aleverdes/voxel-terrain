@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Audio
+namespace TaigaGames.Audio
 {
     public class Sounds : MonoBehaviour
     {

@@ -1,10 +1,10 @@
-using TravkinGames.Localization;
-using TravkinGames.Utils;
+using TaigaGames.Localization;
+using TaigaGames.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TravkinGames.Onboarding
+namespace TaigaGames.Onboarding
 {
     public class OnboardingNarrator : MonoBehaviour
     {

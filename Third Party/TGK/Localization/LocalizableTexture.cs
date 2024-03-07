@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     [CreateAssetMenu(menuName = "Localization/Texture", fileName = "Localization Texture", order = 1000)]
     public class LocalizableTexture : LocalizationObject<Texture2D>

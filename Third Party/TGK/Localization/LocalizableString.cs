@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     [CreateAssetMenu(menuName = "Localization/Text", fileName = "Localization Text", order = 999)]
     public class LocalizableString : LocalizationObject<string>

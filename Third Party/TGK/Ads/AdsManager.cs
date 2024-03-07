@@ -2,7 +2,7 @@ using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace TravkinGames.Ads
+namespace TaigaGames.Ads
 {
     public class AdsManager : MonoBehaviour
     {

@@ -1,7 +1,7 @@
-using TravkinGames.Utils;
+using TaigaGames.Utils;
 using UnityEngine;
 
-namespace TravkinGames.Audio
+namespace TaigaGames.Audio
 {
     public class Music : MonoBehaviour
     {

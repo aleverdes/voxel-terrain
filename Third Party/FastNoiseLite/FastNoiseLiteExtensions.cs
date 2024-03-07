@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     public static class FastNoiseLiteExtensions
     {

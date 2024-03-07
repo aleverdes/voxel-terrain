@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace TravkinGames.Navigation
+namespace TaigaGames.Navigation
 {
     /// <summary>
     /// WIP

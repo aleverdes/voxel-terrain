@@ -5,7 +5,7 @@ using AppodealStack.Monetization.Common;
 #endif
 using UnityEngine;
 
-namespace TravkinGames.Ads
+namespace TaigaGames.Ads
 {
     public class AdsAppodeal : MonoBehaviour, IAdsManager
 #if UNITY_ANDROID || UNITY_IOS

@@ -3,7 +3,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class MeshGenerator : MonoBehaviour

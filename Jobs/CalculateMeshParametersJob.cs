@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
     public struct CalculateMeshParametersJob : IJobParallelFor, IDisposable

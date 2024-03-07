@@ -1,4 +1,4 @@
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     public class VoxelBiomeState
     {

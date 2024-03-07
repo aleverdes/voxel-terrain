@@ -7,7 +7,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     public class VoxelTerrain : MonoBehaviour
     {

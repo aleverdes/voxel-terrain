@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     [RequireComponent(typeof(Image))]
     public class LocalizedImage : LocalizedObject

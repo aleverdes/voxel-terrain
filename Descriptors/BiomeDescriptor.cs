@@ -4,7 +4,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CreateAssetMenu(menuName = "Voxels/Descriptors/Biome", fileName = "Biome Descriptor")]
     public class BiomeDescriptor : ScriptableObject

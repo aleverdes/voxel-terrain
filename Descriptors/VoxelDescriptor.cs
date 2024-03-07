@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CreateAssetMenu(menuName = "Voxels/Descriptors/Voxel", fileName = "Voxel Descriptor")]
     public class VoxelDescriptor : ScriptableObject

@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
-using TravkinGames.Saves;
-using TravkinGames.Utils;
+using TaigaGames.Saves;
+using TaigaGames.Utils;
 using UnityEngine;
 
-namespace TravkinGames.Onboarding
+namespace TaigaGames.Onboarding
 {
     public class OnboardingManager : MonoBehaviour
     {

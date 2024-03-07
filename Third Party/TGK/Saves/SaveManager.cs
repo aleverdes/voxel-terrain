@@ -3,15 +3,15 @@ using System.Collections;
 using System.IO;
 using Newtonsoft.Json;
 using Sirenix.OdinInspector;
-using TravkinGames.Localization;
-using TravkinGames.Utils;
+using TaigaGames.Localization;
+using TaigaGames.Utils;
 using UnityEngine;
 
 #if UNITY_WEBGL
 using GamePush;
 #endif
 
-namespace TravkinGames.Saves
+namespace TaigaGames.Saves
 {
     public abstract class SaveManager<T> : MonoBehaviour where T : class, IGameData, new()
     {

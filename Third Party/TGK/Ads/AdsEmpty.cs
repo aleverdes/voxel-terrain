@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TravkinGames.Ads
+namespace TaigaGames.Ads
 {
     public class AdsEmpty : MonoBehaviour, IAdsManager
     {

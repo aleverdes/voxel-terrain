@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     public static class LocalizationUtils
     {

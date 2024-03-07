@@ -4,19 +4,20 @@ using UnityEngine;
 
 namespace TaigaGames.Voxels
 {
-    [CustomEditor(typeof(NoiseCombinator))]
-    public class NoiseCombinatorEditor : Editor
+    [CustomEditor(typeof(NoiseTexture))]
+    public class NoiseTextureEditor : Editor
     {
         private Texture2D _outputTexture;
-        private Vector2Int _outputTextureSize = new Vector2Int(256, 256);
 
         public override bool HasPreviewGUI() => true;
+        
+        private NoiseTexture Target => (NoiseTexture) target;
 
         private void OnEnable()
         {
             if (!_outputTexture)
             {
-                _outputTexture = new Texture2D(_outputTextureSize.x, _outputTextureSize.y);
+                _outputTexture = new Texture2D(Target.GetSize().x, Target.GetSize().y);
                 Redraw();
             }
         }
@@ -25,7 +26,7 @@ namespace TaigaGames.Voxels
         {
             if (!_outputTexture)
             {
-                _outputTexture = new Texture2D(_outputTextureSize.x, _outputTextureSize.y);
+                _outputTexture = new Texture2D(_outputTexture.width, _outputTexture.height);
                 Redraw();
             }
             
@@ -39,7 +40,7 @@ namespace TaigaGames.Voxels
         {
             if (!_outputTexture)
             {
-                _outputTexture = new Texture2D(_outputTextureSize.x, _outputTextureSize.y);
+                _outputTexture = new Texture2D(_outputTexture.width, _outputTexture.height);
                 Redraw();
             }
             
@@ -48,16 +49,16 @@ namespace TaigaGames.Voxels
 
         private void Redraw()
         {
-            for (var i = 0; i < _outputTextureSize.y; i++)
-            for (var j = 0; j < _outputTextureSize.x; j++)
-                _outputTexture.SetPixel(j, i, GetNoiseColor(j, i));
+            for (var x = 0; x < _outputTexture.width; x++)
+            for (var y = 0; y < _outputTexture.height; y++)
+                _outputTexture.SetPixel(x, y, GetNoiseColor(x, y));
 
             _outputTexture.Apply();
         }
 
         private Color GetNoiseColor(float x, float y)
         {
-            var noise = ((NoiseCombinator) target).GetNoise(x, y);
+            var noise = Target.GetNoise(x, y);
             var result = Color.white * noise;
             result.a = 1f;
             return result;

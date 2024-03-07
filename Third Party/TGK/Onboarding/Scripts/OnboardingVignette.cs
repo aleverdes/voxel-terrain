@@ -1,8 +1,8 @@
-using TravkinGames.Utils;
+using TaigaGames.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TravkinGames.Onboarding
+namespace TaigaGames.Onboarding
 {
     public class OnboardingVignette : MonoBehaviour
     {

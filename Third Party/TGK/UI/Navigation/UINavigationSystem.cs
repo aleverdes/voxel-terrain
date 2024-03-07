@@ -3,7 +3,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace TravkinGames.Navigation
+namespace TaigaGames.Navigation
 {
     /// <summary>
     /// WIP

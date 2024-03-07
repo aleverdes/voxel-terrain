@@ -1,8 +1,8 @@
 using System.Collections;
-using TravkinGames.Saves;
+using TaigaGames.Saves;
 using UnityEngine;
 
-namespace TravkinGames
+namespace TaigaGames
 {
     public abstract class GameBehaviour<T> : MonoBehaviour where T : class, IGameData, new()
     {

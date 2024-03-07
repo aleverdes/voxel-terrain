@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     public abstract class LocalizationObject<T> : ScriptableObject
     {

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TravkinGames.Onboarding
+namespace TaigaGames.Onboarding
 {
     public abstract class OnboardingState : MonoBehaviour
     {

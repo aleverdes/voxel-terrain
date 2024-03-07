@@ -1,5 +1,5 @@
 using System.IO;
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public static class FileSystemInfoEx
     {

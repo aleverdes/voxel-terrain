@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     [RequireComponent(typeof(TMP_Text))]
     public class LocalizedTMP : LocalizedObject

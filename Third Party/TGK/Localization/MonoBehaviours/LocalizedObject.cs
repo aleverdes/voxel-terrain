@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     public abstract class LocalizedObject : MonoBehaviour
     {

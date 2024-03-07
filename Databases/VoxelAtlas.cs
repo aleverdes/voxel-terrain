@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Sirenix.OdinInspector;
-using TravkinGames.Utils;
+using TaigaGames.Utils;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CreateAssetMenu(menuName = "Voxels/Atlas", fileName = "Voxel Atlas")]
     public class VoxelAtlas : ScriptableObject

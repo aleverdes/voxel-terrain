@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     public abstract class NoiseProvider : ScriptableObject, INoiseProvider
     {
@@ -11,9 +11,9 @@ namespace TravkinGames.Voxels
             return GetNoise(position.x, 0, position.y);
         }
 
-        public float GetNoise(float x, float z)
+        public float GetNoise(float x, float y)
         {
-            return GetNoise(x, 0, z);
+            return GetNoise(x, y, 0);
         }
 
         public float GetNoise(Vector3 position)

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     [CreateAssetMenu(menuName = "Localization/Sprite", fileName = "Localization Sprite", order = 1001)]
     public class LocalizableSprite : LocalizationObject<Sprite>

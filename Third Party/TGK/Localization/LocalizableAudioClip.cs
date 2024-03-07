@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TravkinGames.Localization
+namespace TaigaGames.Localization
 {
     [CreateAssetMenu(menuName = "Localization/AudioClip", fileName = "Localization AudioClip", order = 1002)]
     public class LocalizableAudioClip : LocalizationObject<AudioClip>

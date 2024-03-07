@@ -8,7 +8,7 @@ using System.IO;
 using UnityEditor;
 #endif
 
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public static class AssetDatabaseUtils
     {

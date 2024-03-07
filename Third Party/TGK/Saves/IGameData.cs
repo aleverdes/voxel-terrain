@@ -1,4 +1,4 @@
-namespace TravkinGames.Saves
+namespace TaigaGames.Saves
 {
     public interface IGameData
     {

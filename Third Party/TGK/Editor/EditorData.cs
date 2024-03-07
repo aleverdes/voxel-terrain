@@ -1,6 +1,6 @@
 using System;
 
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public class EditorData<T>
     {

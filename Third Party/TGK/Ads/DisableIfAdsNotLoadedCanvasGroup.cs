@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TravkinGames.Ads
+namespace TaigaGames.Ads
 {
     [RequireComponent(typeof(Button))]
     public class DisableIfAdsNotLoadedCanvasGroup : MonoBehaviour

@@ -1,8 +1,8 @@
 using System;
-using TravkinGames.Utils;
+using TaigaGames.Utils;
 using UnityEngine;
 
-namespace TravkinGames
+namespace TaigaGames
 {
     /// <summary>
     /// Контроллер для управления CanvasGroup.

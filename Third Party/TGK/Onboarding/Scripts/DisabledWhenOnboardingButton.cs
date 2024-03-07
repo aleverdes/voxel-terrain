@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TravkinGames.Onboarding
+namespace TaigaGames.Onboarding
 {
     [RequireComponent(typeof(Button))]
     public class DisabledWhenOnboardingButton : MonoBehaviour

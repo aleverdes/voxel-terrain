@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public abstract class BaseDatabase<T> : ScriptableObject where T : ScriptableObject
     {

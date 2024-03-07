@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-namespace TravkinGames.Utils
+namespace TaigaGames.Utils
 {
     public static class BoolEx
     {

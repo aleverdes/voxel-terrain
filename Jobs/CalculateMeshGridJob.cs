@@ -5,7 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
     public struct CalculateMeshGridJob : IJobParallelFor, IDisposable

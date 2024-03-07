@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace TravkinGames
+namespace TaigaGames
 {
     [Serializable]
     public class ReactiveData<T>

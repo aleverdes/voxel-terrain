@@ -1,7 +1,7 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CreateAssetMenu(menuName = "Voxels/Generators/BiomeMap", fileName = "Biome Map Generator")]
     public class BiomeMapGenerator : ScriptableObject

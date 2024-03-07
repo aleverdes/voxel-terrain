@@ -1,7 +1,7 @@
-using TravkinGames.Utils;
+using TaigaGames.Utils;
 using UnityEngine;
 
-namespace TravkinGames.Voxels
+namespace TaigaGames.Voxels
 {
     [CreateAssetMenu(menuName = "Voxels/Biome Database", fileName = "Biome Database")]
     public class BiomeDatabase : BaseDatabase<BiomeDescriptor>
