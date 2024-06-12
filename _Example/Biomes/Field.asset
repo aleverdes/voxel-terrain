@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 216bfe9e497f48bf97adf5f296e18431, type: 3}
+  m_Name: Field
+  m_EditorClassIdentifier: 
+  _biomeMapColor: {r: 0.106677905, g: 0.26452544, b: 0.97417176, a: 1}
+  _defaultVoxel: {fileID: 11400000, guid: 6c21006dc7a7846c5931ddcd05a3f5fd, type: 2}
+  _voxels: []
+  _landscapeNoise: {fileID: 11400000, guid: a02419afc4e18402bae74e385cddf750, type: 2}
+  _minMaxHeight: {x: 8, y: 10}
+  _temperature: 0.106677905
+  _humidity: 0.26452544
+  _altitude: 0.97417176
